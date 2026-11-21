@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бази даних: Таблиця, Поле, Запис, Ключ (9 клас)</title>
+    <style>
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 6px;
+            background-color: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .nav-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.active {
+            background-color: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover:not(.active) {
+            color: #0f172a;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+        }
+
+        /* Banner */
+        .banner {
+            background: linear-gradient(to right, #eff6ff, #eef2ff);
+            border: 1px solid #bfdbfe;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .badge-blue { background-color: #dbeafe; color: #1e40af; }
+        .badge-purple { background-color: #f3e8ff; color: #6b21a8; }
+        .badge-amber { background-color: #fef3c7; color: #92400e; }
+        .badge-teal { background-color: #ccfbf1; color: #115e59; }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip-btn {
+            border: 1px solid;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            transition: transform 0.1s ease;
+        }
+        .chip-btn:active { transform: scale(0.96); }
+
+        .chip-teal { border-color: #99f6e4; color: #0f766e; background-color: #f0fdf4; }
+        .chip-blue { border-color: #bfdbfe; color: #1d4ed8; background-color: #eff6ff; }
+        .chip-purple { border-color: #e9d5ff; color: #7e22ce; background-color: #faf5ff; }
+        .chip-amber { border-color: #fde68a; color: #b45309; background-color: #fffbeb; }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 7fr 5fr;
+            }
+        }
+
+        /* Database Table Styles */
+        .db-table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .db-table th, .db-table td {
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+        .db-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .db-table th.key-col {
+            background-color: #fffbeb;
+            color: #92400e;
+        }
+
+        .db-table tr.data-row {
+            cursor: pointer;
+        }
+
+        /* Highlighting classes */
+        .hl-field {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+        }
+
+        .hl-record {
+            background-color: #f3e8ff !important;
+            border-color: #a855f7 !important;
+        }
+
+        .hl-key {
+            background-color: #fef3c7 !important;
+            border-color: #f59e0b !important;
+        }
+
+        .hl-table-active {
+            outline: 4px solid #14b8a6;
+            border-radius: 8px;
+        }
+
+        /* Interactive Info Card */
+        .info-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .info-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 8px 0 12px 0;
+        }
+
+        .info-desc {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .feature-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .feature-box h4 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .feature-box ul {
+            list-style: none;
+        }
+
+        .feature-box li {
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .analogy-box {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #78350f;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Practice Trainer Elements */
+        .trainer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 16px;
+            background: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+        .score-item span { display: block; }
+        .score-item .label { font-size: 11px; color: #64748b; }
+        .score-item .val { font-size: 18px; font-weight: 800; color: #2563eb; }
+
+        .task-card {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .task-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .task-hint {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Matching Quiz */
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 768px) {
+            .match-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .match-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-btn:hover:not(.matched) {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
+        }
+
+        .match-btn.selected {
+            border-color: #2563eb;
+            background-color: #dbeafe;
+        }
+
+        .match-btn.matched {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+            cursor: default;
+        }
+
+        .match-btn.wrong {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        /* Modal Alert */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px auto;
+        }
+        .modal-icon.success { background: #d1fae5; color: #059669; }
+        .modal-icon.error { background: #fee2e2; color: #dc2626; }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+        }
+        .btn-primary:hover { background-color: #1d4ed8; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <div class="header-icon">🗄️</div>
+            <div>
+                <h1 style="font-size: 18px; font-weight: 800;">Бази даних: Основні поняття</h1>
+                <p style="font-size: 12px; color: #64748b;">Інформатика • 9 клас</p>
+            </div>
+        </div>
+        <nav class="nav-tabs">
+            <button id="tab-btn-explore" class="nav-btn active" onclick="setTab('explore')">🔍 1. Дослідження</button>
+            <button id="tab-btn-practice" class="nav-btn" onclick="setTab('practice')">🎯 2. Тренажер</button>
+            <button id="tab-btn-match" class="nav-btn" onclick="setTab('match')">🧩 3. Перевірка</button>
+        </nav>
+    </header>
+
+    <!-- Main Body -->
+    <main>
+
+        <!-- SECTION 1: EXPLORE -->
+        <section id="sec-explore">
+            <div class="banner">
+                <div>
+                    <span class="badge badge-blue">Наочна модель</span>
+                    <h2 style="font-size: 18px; font-weight: 800; color: #0f172a;">Наводь мишку або клікай по елементах таблиці</h2>
+                    <p style="font-size: 13px; color: #475569; margin-top: 2px;">Дізнайся значення понять: Таблиця, Поле, Запис та Первинний ключ.</p>
+                </div>
+                <div class="btn-group">
+                    <button class="chip-btn chip-teal" onclick="selectConcept('table')">Вша Таблиця</button>
+                    <button class="chip-btn chip-blue" onclick="selectConcept('field', 1)">Поле (Стовпець)</button>
+                    <button class="chip-btn chip-purple" onclick="selectConcept('record', 1)">Запис (Рядок)</button>
+                    <button class="chip-btn chip-amber" onclick="selectConcept('key')">🔑 Первинний ключ</button>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- DB Table Container -->
+                <div class="card" id="explore-table-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="font-size: 16px; font-weight: 700;">📁 Таблиця: <span style="color: #0d9488;">"Учні"</span></h3>
+                        <span style="font-size: 11px; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600;">Реляційна БД</span>
+                    </div>
+
+                    <div class="db-table-container">
+                        <table class="db-table" id="explore-table">
+                            <thead>
+                                <tr>
+                                    <th class="key-col" onmouseenter="hoverConcept('key')" onclick="selectConcept('key')">🔑 ID_Учня</th>
+                                    <th onmouseenter="hoverConcept('field', 1)" onclick="selectConcept('field', 1)">Прізвище</th>
+                                    <th onmouseenter="hoverConcept('field', 2)" onclick="selectConcept('field', 2)">Ім'я</th>
+                                    <th onmouseenter="hoverConcept('field', 3)" onclick="selectConcept('field', 3)">Клас</th>
+                                    <th onmouseenter="hoverConcept('field', 4)" onclick="selectConcept('field', 4)">Телефон</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="data-row" onmouseenter="hoverConcept('record', 0)" onclick="selectConcept('record', 0)">
+                                    <td style="font-weight: 700; color: #b45309; background: #fffbeb;">101</td>
+                                    <td>Коваленко</td>
+                                    <td>Олексій</td>
+                                    <td>9-А</td>
+                                    <td>+380671112233</td>
+                                </tr>
+                                <tr class="data-row" onmouseenter="hoverConcept('record', 1)" onclick="selectConcept('record', 1)">
+                                    <td style="font-weight: 700; color: #b45309; background: #fffbeb;">102</td>
+                                    <td>Шевченко</td>
+                                    <td>Марія</td>
+                                    <td>9-Б</td>
+                                    <td>+380504445566</td>
+                                </tr>
+                                <tr class="data-row" onmouseenter="hoverConcept('record', 2)" onclick="selectConcept('record', 2)">
+                                    <td style="font-weight: 700; color: #b45309; background: #fffbeb;">103</td>
+                                    <td>Бондаренко</td>
+                                    <td>Данило</td>
+                                    <td>9-А</td>
+                                    <td>+380637778899</td>
+                                </tr>
+                                <tr class="data-row" onmouseenter="hoverConcept('record', 3)" onclick="selectConcept('record', 3)">
+                                    <td style="font-weight: 700; color: #b45309; background: #fffbeb;">104</td>
+                                    <td>Ткаченко</td>
+                                    <td>Софія</td>
+                                    <td>9-В</td>
+                                    <td>+380970001122</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button onclick="selectConcept('table')" style="margin-top: 14px; width: 100%; padding: 8px; border: 1px dashed #0d9488; background: #f0fdf4; color: #0d9488; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                        🔳 Кликни сюди, щоб виділити ВСЮ ТАБЛИЦЮ
+                    </button>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-card" id="info-box">
+                    <span id="info-badge" class="badge badge-teal">📁 ТАБЛИЦЯ</span>
+                    <h3 id="info-title" class="info-title">Що таке Таблиця БД?</h3>
+                    <p id="info-desc" class="info-desc">Таблиця — це основний об'єкт збереження даних у реляційній базі даних, де інформація організована у вигляді рядків та стовпців.</p>
+
+                    <div class="feature-box">
+                        <h4>Основні властивості:</h4>
+                        <ul id="info-features">
+                            <li><span>✓</span> Містить відомості про об'єкти одного типу (наприклад, про учнів).</li>
+                            <li><span>✓</span> Складається з полів (стовпців) та записів (рядків).</li>
+                        </ul>
+                    </div>
+
+                    <div class="analogy-box">
+                        <span style="font-size: 20px;">💡</span>
+                        <div>
+                            <strong>Життєва аналогія:</strong>
+                            <p id="info-analogy" style="font-size: 12px; margin-top: 2px;">Усьому класу відповідає один класний журнал — це і є таблиця.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: PRACTICE TRAINER -->
+        <section id="sec-practice" class="hidden">
+            <div class="card trainer-header">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 800;">Тренажер: «Знайди елемент в БД»</h2>
+                    <p style="font-size: 13px; color: #64748b;">Прочитай завдання та кликни на відповідну частину таблиці нижче.</p>
+                </div>
+                <div class="score-board">
+                    <div class="score-item">
+                        <span class="label">Раунд</span>
+                        <span class="val" id="practice-round">1 / 5</span>
+                    </div>
+                    <div style="width: 1px; background: #e2e8f0;"></div>
+                    <div class="score-item">
+                        <span class="label">Бали</span>
+                        <span class="val" id="practice-score" style="color: #10b981;">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Banner -->
+            <div class="task-card">
+                <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">Завдання</span>
+                <h3 id="task-question" class="task-title">Знайди та кликни на ПЕРВИННИЙ КЛЮЧ!</h3>
+                <p id="task-hint" class="task-hint">Підказка: Це унікальний номер/код для кожного запису (позначений ключиком 🔑)</p>
+            </div>
+
+            <!-- Interactive Practice Table -->
+            <div class="card">
+                <div class="db-table-container">
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th class="key-col" style="cursor: pointer;" onclick="checkPractice('key')">🔑 ID_Товару</th>
+                                <th style="cursor: pointer;" onclick="checkPractice('field')">Назва товару</th>
+                                <th style="cursor: pointer;" onclick="checkPractice('field')">Категорія</th>
+                                <th style="cursor: pointer;" onclick="checkPractice('field')">Ціна (грн)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="cursor: pointer;" onclick="checkPractice('record')">
+                                <td style="font-weight: 700; color: #b45309; background: #fffbeb;">A-101</td>
+                                <td>Ноутбук Lenovo</td>
+                                <td>Комп'ютери</td>
+                                <td>25 000</td>
+                            </tr>
+                            <tr style="cursor: pointer;" onclick="checkPractice('record')">
+                                <td style="font-weight: 700; color: #b45309; background: #fffbeb;">A-102</td>
+                                <td>Мишка бездротова</td>
+                                <td>Периферія</td>
+                                <td>650</td>
+                            </tr>
+                            <tr style="cursor: pointer;" onclick="checkPractice('record')">
+                                <td style="font-weight: 700; color: #b45309; background: #fffbeb;">A-103</td>
+                                <td>Монітор 27"</td>
+                                <td>Монітори</td>
+                                <td>8 500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button onclick="checkPractice('table')" style="margin-top: 14px; width: 100%; padding: 10px; border: 2px dashed #0d9488; background: #f0fdf4; color: #0d9488; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                    🔳 Клацніть сюди, щоб вибрати ВСЮ ТАБЛИЦЮ
+                </button>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: MATCHING QUIZ -->
+        <section id="sec-match" class="hidden">
+            <div class="card">
+                <h2 style="font-size: 18px; font-weight: 800;">З’єднай термін з його визначенням</h2>
+                <p style="font-size: 13px; color: #64748b; margin-top: 4px;">1. Кликни на термін ліворуч. 2. Кликни на відповідне визначення праворуч.</p>
+            </div>
+
+            <div class="match-grid">
+                <!-- Terms Column -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <h3 style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Терміни</h3>
+                    <div id="term-table" class="match-btn" onclick="selectMatchTerm('table')">
+                        <span style="font-weight: 700;">1. Таблиця БД</span>
+                        <span class="status-icon">⚪</span>
+                    </div>
+                    <div id="term-field" class="match-btn" onclick="selectMatchTerm('field')">
+                        <span style="font-weight: 700;">2. Поле</span>
+                        <span class="status-icon">⚪</span>
+                    </div>
+                    <div id="term-record" class="match-btn" onclick="selectMatchTerm('record')">
+                        <span style="font-weight: 700;">3. Запис</span>
+                        <span class="status-icon">⚪</span>
+                    </div>
+                    <div id="term-key" class="match-btn" onclick="selectMatchTerm('key')">
+                        <span style="font-weight: 700;">4. Первинний ключ</span>
+                        <span class="status-icon">⚪</span>
+                    </div>
+                </div>
+
+                <!-- Definitions Column -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <h3 style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Визначення</h3>
+                    <div id="def-key" class="match-btn" onclick="selectMatchDef('key')">
+                        <span><strong style="color: #b45309;">А.</strong> Поле, яке однозначно ідентифікує кожний запис у таблиці і не повторюється.</span>
+                    </div>
+                    <div id="def-record" class="match-btn" onclick="selectMatchDef('record')">
+                        <span><strong style="color: #7e22ce;">Б.</strong> Рядок таблиці, який містить повний набір даних про один об'єкт.</span>
+                    </div>
+                    <div id="def-table" class="match-btn" onclick="selectMatchDef('table')">
+                        <span><strong style="color: #0f766e;">В.</strong> Основний об'єкт БД для зберігання даних у вигляді рядків та стовпців.</span>
+                    </div>
+                    <div id="def-field" class="match-btn" onclick="selectMatchDef('field')">
+                        <span><strong style="color: #1d4ed8;">Г.</strong> Стовпець таблиці, який містить значенні однієї властивості об'єкта.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Win Box -->
+            <div id="quiz-win" class="card hidden" style="background: #ecfdf5; border-color: #6ee7b7; text-align: center; margin-top: 20px;">
+                <span style="font-size: 40px;">🎉</span>
+                <h3 style="font-size: 20px; font-weight: 800; color: #065f46; margin-top: 8px;">Чудово! Усі відповіді правильні!</h3>
+                <p style="font-size: 13px; color: #047857; margin-top: 4px;">Ви чудово опанували поняття баз даних!</p>
+                <button onclick="resetMatchQuiz()" class="btn-primary" style="max-width: 200px; margin: 16px auto 0 auto;">Пройти знову 🔄</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Feedback Modal -->
+    <div id="modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div id="modal-icon" class="modal-icon success">✓</div>
+            <h3 id="modal-title" style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Правильно!</h3>
+            <p id="modal-msg" style="font-size: 13px; color: #475569;">Ви обрали правильний елемент.</p>
+            <button class="btn-primary" onclick="closeModal()">Продовжити ➔</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Core Logic -->
+    <script>
+        // DATA DEFINITIONS
+        const concepts = {
+            table: {
+                badge: "📁 ТАБЛИЦЯ",
+                badgeClass: "badge-teal",
+                title: "Що таке Таблиця БД?",
+                desc: "Таблиця — це головний об'єкт бази даних для зберігання структурованих даних у вигляді рядків та стовпчиків.",
+                features: [
+                    "Зберігає дані про об'єкти одного типу (наприклад, про учнів).",
+                    "Складається з Полів (стовпців) та Записів (рядків)."
+                ],
+                analogy: "Весь класний журнал школи — це таблиця БД."
+            },
+            field: {
+                badge: "🔹 ПОЛЕ (Стовпець)",
+                badgeClass: "badge-blue",
+                title: "Що таке Поле таблиці?",
+                desc: "Поле — це стовпець таблиці, що містить одну конкретну властивість об'єкта (наприклад, тільки Прізвища або телефони).",
+                features: [
+                    "Має унікальну назву в межах таблиці.",
+                    "Усі значення в одному полі мають однаковий тип даних."
+                ],
+                analogy: "Один окремий стовпчик у журналі (наприклад, 'Дата народження')."
+            },
+            record: {
+                badge: "📄 ЗАПИС (Рядок)",
+                badgeClass: "badge-purple",
+                title: "Що таке Запис таблиці?",
+                desc: "Запис — це рядок таблиці, що містить повний набір відомостей про один конкретний об'єкт.",
+                features: [
+                    "Об'єднує значення всіх полів для однієї особи чи предмета.",
+                    "Кількість рядків відповідає кількості об'єктів у БД."
+                ],
+                analogy: "Один рядок у журналі, виділений під конкретного учня."
+            },
+            key: {
+                badge: "🔑 ПЕРВИННИЙ КЛЮЧ",
+                badgeClass: "badge-amber",
+                title: "Що таке Первинний ключ?",
+                desc: "Первинний ключ (Primary Key) — це поле, значення якого є унікальним для кожного запису та не повторюється.",
+                features: [
+                    "Дозволяє однозначно знайти необхідний запис.",
+                    "Значення ключа не можуть бути порожніми."
+                ],
+                analogy: "Номер паспорта, ID-картка або індивідуальний податковий номер."
+            }
+        };
+
+        // Navigation Tabs
+        function setTab(tabName) {
+            document.getElementById('sec-explore').classList.add('hidden');
+            document.getElementById('sec-practice').classList.add('hidden');
+            document.getElementById('sec-match').classList.add('hidden');
+
+            document.getElementById('tab-btn-explore').classList.remove('active');
+            document.getElementById('tab-btn-practice').classList.remove('active');
+            document.getElementById('tab-btn-match').classList.remove('active');
+
+            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+        }
+
+        // Section 1: Dynamic Hover & Highlight
+        function clearHighlights() {
+            const table = document.getElementById('explore-table');
+            const card = document.getElementById('explore-table-card');
+            card.classList.remove('hl-table-active');
+
+            for (let row of table.rows) {
+                for (let cell of row.cells) {
+                    cell.classList.remove('hl-field', 'hl-record', 'hl-key');
+                }
+            }
+        }
+
+        function hoverConcept(type, idx = null) {
+            clearHighlights();
+            const table = document.getElementById('explore-table');
+
+            if (type === 'table') {
+                document.getElementById('explore-table-card').classList.add('hl-table-active');
+            } else if (type === 'key') {
+                for (let row of table.rows) {
+                    row.cells[0].classList.add('hl-key');
+                }
+            } else if (type === 'field' && idx !== null) {
+                for (let row of table.rows) {
+                    if (row.cells[idx]) row.cells[idx].classList.add('hl-field');
+                }
+            } else if (type === 'record' && idx !== null) {
+                const row = table.rows[idx + 1]; // header skip
+                if (row) {
+                    for (let cell of row.cells) cell.classList.add('hl-record');
+                }
+            }
+
+            updateInfoBox(type);
+        }
+
+        function selectConcept(type, idx = null) {
+            hoverConcept(type, idx);
+        }
+
+        function updateInfoBox(type) {
+            const data = concepts[type];
+            if (!data) return;
+
+            const badge = document.getElementById('info-badge');
+            badge.className = `badge ${data.badgeClass}`;
+            badge.innerText = data.badge;
+
+            document.getElementById('info-title').innerText = data.title;
+            document.getElementById('info-desc').innerText = data.desc;
+
+            const list = document.getElementById('info-features');
+            list.innerHTML = '';
+            data.features.forEach(f => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>✓</span> ${f}`;
+                list.appendChild(li);
+            });
+
+            document.getElementById('info-analogy').innerText = data.analogy;
+        }
+
+        // Section 2: Trainer Logic
+        const tasks = [
+            { target: 'key', q: 'Знайди та кликни на ПЕРВИННИЙ КЛЮЧ!', hint: 'Це унікальний код товару (🔑 ID_Товару)' },
+            { target: 'field', q: 'Кликни на будь-яке ПОЛЕ (Стовпець)!', hint: 'Обери заголовок будь-якого стовпця у таблиці' },
+            { target: 'record', q: 'Виділи один ЗАПИС (Рядок)!', hint: 'Кликни по будь-якому рядку з даними конкретного товару' },
+            { target: 'table', q: 'Знайди та виділи ВСЮ ТАБЛИЦЮ!', hint: 'Скористайся зеленою кнопкою під таблицею' },
+            { target: 'key', q: 'Закріплення: Покажи Первинний ключ!', hint: 'Перша колонка з унікальними кодами способів ідентифікації' }
+        ];
+
+        let pStep = 0;
+        let pScore = 0;
+
+        function checkPractice(userChoice) {
+            const current = tasks[pStep];
+            const isOk = userChoice === current.target;
+
+            if (isOk) {
+                pScore += 20;
+                document.getElementById('practice-score').innerText = pScore;
+                showModal(true, "Вірно! Чудова робота!", "Ви правильно визначили об'єкт бази даних.");
+            } else {
+                showModal(false, "Помилка!", "Зверніть увагу на підказку та спробуйте ще раз.");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            if (pStep < tasks.length - 1) {
+                pStep++;
+                document.getElementById('practice-round').innerText = `${pStep + 1} / ${tasks.length}`;
+                document.getElementById('task-question').innerText = tasks[pStep].q;
+                document.getElementById('task-hint').innerText = tasks[pStep].hint;
+            } else {
+                document.getElementById('task-question').innerText = `🎉 Тренажер пройдено! Твій результат: ${pScore} / 100 балів!`;
+                document.getElementById('task-hint').innerText = "Переходь до третього розділу!";
+            }
+        }
+
+        function showModal(isSuccess, title, msg) {
+            const icon = document.getElementById('modal-icon');
+            icon.className = `modal-icon ${isSuccess ? 'success' : 'error'}`;
+            icon.innerText = isSuccess ? '✓' : '✕';
+
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = msg;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        // Section 3: Match Quiz Logic
+        let selectedTerm = null;
+        let selectedDef = null;
+        let matches = {};
+
+        const correctPairs = { table: 'table', field: 'field', record: 'record', key: 'key' };
+
+        function selectMatchTerm(termId) {
+            if (matches[termId]) return;
+            selectedTerm = termId;
+
+            document.querySelectorAll('.match-btn').forEach(b => {
+                if (b.id.startsWith('term-') && !matches[b.id.replace('term-', '')]) {
+                    b.classList.remove('selected');
+                }
+            });
+
+            document.getElementById(`term-${termId}`).classList.add('selected');
+            evaluateMatch();
+        }
+
+        function selectMatchDef(defId) {
+            if (Object.values(matches).includes(defId)) return;
+            selectedDef = defId;
+
+            document.querySelectorAll('.match-btn').forEach(b => {
+                if (b.id.startsWith('def-') && !Object.values(matches).includes(b.id.replace('def-', ''))) {
+                    b.classList.remove('selected');
+                }
+            });
+
+            document.getElementById(`def-${defId}`).classList.add('selected');
+            evaluateMatch();
+        }
+
+        function evaluateMatch() {
+            if (selectedTerm && selectedDef) {
+                const termElem = document.getElementById(`term-${selectedTerm}`);
+                const defElem = document.getElementById(`def-${selectedDef}`);
+
+                if (correctPairs[selectedTerm] === selectedDef) {
+                    matches[selectedTerm] = selectedDef;
+
+                    termElem.className = "match-btn matched";
+                    termElem.querySelector('.status-icon').innerText = "✅";
+
+                    defElem.className = "match-btn matched";
+
+                    selectedTerm = null;
+                    selectedDef = null;
+
+                    if (Object.keys(matches).length === 4) {
+                        document.getElementById('quiz-win').classList.remove('hidden');
+                    }
+                } else {
+                    termElem.classList.add('wrong');
+                    defElem.classList.add('wrong');
+
+                    setTimeout(() => {
+                        termElem.classList.remove('wrong', 'selected');
+                        defElem.classList.remove('wrong', 'selected');
+                        selectedTerm = null;
+                        selectedDef = null;
+                    }, 500);
+                }
+            }
+        }
+
+        function resetMatchQuiz() {
+            matches = {};
+            selectedTerm = null;
+            selectedDef = null;
+            document.getElementById('quiz-win').classList.add('hidden');
+
+            document.querySelectorAll('#sec-match .match-btn').forEach(btn => {
+                btn.className = "match-btn";
+                const icon = btn.querySelector('.status-icon');
+                if (icon) icon.innerText = "⚪";
+            });
+        }
+    </script>
+</body>
+</html>
