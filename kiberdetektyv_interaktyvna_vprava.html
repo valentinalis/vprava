@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кібердетектив — інтерактивна вправа</title>
+<style>
+:root{--bg:#0b1020;--panel:#151d33;--panel2:#1c2842;--text:#edf3ff;--muted:#aab8d5;--accent:#62e6c5;--accent2:#7ea8ff;--good:#6ee7a8;--bad:#ff8795}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#172748 0%,var(--bg) 55%);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:850px;margin:0 auto;padding:28px 16px 48px}
+header{text-align:center;margin-bottom:22px}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.1;margin:8px 0}
+.subtitle{color:var(--muted);max-width:620px;margin:12px auto}
+.panel{background:linear-gradient(145deg,rgba(25,36,61,.98),rgba(17,25,44,.98));border:1px solid #2a3a5b;border-radius:22px;padding:clamp(18px,4vw,30px);box-shadow:0 18px 55px #0004}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.tag{border:1px solid #385174;background:#1b2a46;color:#cfe0ff;padding:6px 11px;border-radius:999px;font-size:.85rem}
+.progress{height:8px;background:#26334f;border-radius:99px;overflow:hidden;margin:14px 0 24px}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .25s}
+h2{font-size:1.45rem;margin:0 0 14px}
+.scenario{background:#10182b;border-left:4px solid var(--accent2);padding:16px 18px;border-radius:12px;margin:16px 0 22px;color:#e0e9ff}
+.question{font-weight:700;font-size:1.08rem;margin:0 0 14px}
+.answers{display:grid;gap:10px}
+.answer{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--panel2);border:1px solid #344766;border-radius:13px;padding:14px;color:var(--text);font:inherit;cursor:pointer;transition:.15s}
+.answer:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+.answer .letter{flex:0 0 28px;height:28px;border-radius:8px;background:#2a3b5b;display:grid;place-items:center;font-weight:800;color:#cfe0ff}
+.answer.selected{border-color:var(--accent2);background:#233553}
+.answer.correct{border-color:var(--good);background:#173b36}
+.answer.wrong{border-color:var(--bad);background:#442532}
+.answer:disabled{cursor:default}
+.feedback{margin-top:18px;border-radius:13px;padding:15px 17px;background:#10182b;border:1px solid #344766}
+.feedback strong{display:block;margin-bottom:5px}
+.feedback.good strong{color:var(--good)}.feedback.bad strong{color:var(--bad)}
+.actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:22px}
+button.primary,button.secondary{border:0;border-radius:12px;padding:12px 20px;font:700 1rem system-ui;cursor:pointer}
+.primary{background:var(--accent);color:#071a20}.primary:disabled{opacity:.45;cursor:not-allowed}
+.secondary{background:#263653;color:var(--text);border:1px solid #3a4d70!important}
+.scoreline{color:var(--muted);font-size:.92rem}
+.finish{text-align:center;padding:10px 0}
+.bigscore{font-size:3.2rem;font-weight:850;color:var(--accent);line-height:1.2;margin:12px}
+.tip{color:var(--muted);font-size:.9rem;margin-top:20px;text-align:center}
+footer{text-align:center;color:#7183a5;font-size:.82rem;margin-top:18px}
+@media(max-width:560px){main{padding:18px 10px 32px}.panel{border-radius:16px}.actions button{width:100%}.topline{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="kicker">Інтерактивна вправа · 9–10 клас</div>
+<h1>🕵️ Кібердетектив</h1>
+<p class="subtitle">П'ять справ. П'ять цифрових загроз. Чи зможеш ти розпізнати небезпеку й обрати безпечне рішення?</p>
+</header>
+<section class="panel" id="game" aria-live="polite"></section>
+<p class="tip">Порада: обирай рішення, яке захищає твої дані, пристрій та облікові записи.</p>
+<footer>Навчальна симуляція. Не використовуй справжні паролі чи особисті дані.</footer>
+</main>
+<script>
+const cases = [
+{title:"Справа 1. Підозріле повідомлення",scene:"Ти отримуєш повідомлення нібито від однокласника: «Терміново! Подивись фото з учорашньої вечірки». Посилання веде на сайт, де потрібно увійти через Google.",question:"Яка дія найкраще допоможе уникнути викрадення облікового запису?",answers:["Увійти, якщо сторінка виглядає як Google","Не вводити пароль, перевірити посилання та уточнити в однокласника іншим способом","Переслати посилання друзям, щоб вони перевірили"],correct:1,explanation:"Фішингові сторінки можуть копіювати вигляд справжніх сервісів. Перевір адресу сайту та підтверди повідомлення через інший канал."},
+{title:"Справа 2. Невідомий файл",scene:"Ти завантажив файл «Результати_олімпіади.docx.exe». Після завантаження Windows показує, що це програма. Відправник — незнайома адреса.",question:"Що варто зробити?",answers:["Запустити файл, бо в назві є .docx","Перейменувати файл на .docx і відкрити","Не запускати, видалити файл і за потреби перевірити пристрій антивірусом"],correct:2,explanation:"Подвійне розширення може маскувати виконуваний файл. Не запускай його; повідомлення про файл можна передати вчителю або адміністратору."},
+{title:"Справа 3. Цифровий слід",scene:"Ти опублікував фото з дому. На задньому плані видно адресу на конверті, а в дописі написано, що сім'я поїхала на тиждень.",question:"Який ризик створює ця публікація?",answers:["Вона може розкрити адресу та період відсутності вдома","Вона лише збільшує кількість лайків","Ризику немає, якщо профіль приватний"],correct:0,explanation:"Фото й допис можуть розкрити приватну інформацію. Прибери публікацію, перевір доступ до профілю та надалі приховуй адресу й плани від'їзду."},
+{title:"Справа 4. Публічний Wi-Fi",scene:"У кав'ярні доступна відкрита мережа Wi-Fi. Ти хочеш зайти в електронний щоденник, а назва мережі схожа на назву закладу.",question:"Який варіант найбезпечніший?",answers:["Підключитися до будь-якої мережі з відповідною назвою","Уточнити назву мережі в працівника, використовувати HTTPS і не ігнорувати попередження браузера","Вимкнути пароль на телефоні, щоб мережа працювала швидше"],correct:1,explanation:"Зловмисник може створити мережу з подібною назвою. Перевір її назву, не обходь попередження безпеки та для важливих операцій краще використовуй мобільний інтернет."},
+{title:"Справа 5. Захоплення акаунта",scene:"Ти отримав сповіщення про вхід у свій акаунт з невідомого пристрою. Пароль ти нікому не повідомляв.",question:"Який порядок дій найкращий?",answers:["Ігнорувати сповіщення, якщо акаунт ще працює","Відповісти на повідомлення з проханням надіслати код підтвердження","Зайти через офіційний сайт, змінити пароль, завершити невідомі сеанси й перевірити двофакторну автентифікацію"],correct:2,explanation:"Невідомий вхід може означати компрометацію акаунта. Дій через офіційний сервіс, зміни пароль і заверши сторонні сеанси. Нікому не передавай коди підтвердження."}
+];
+let index=0,selected=null,score=0,answered=false;
+const root=document.getElementById("game");
+function render(){
+ if(index>=cases.length){finish();return}
+ const c=cases[index];
+ root.innerHTML=`
+ <div class="topline"><span class="tag">Справа ${index+1} із ${cases.length}</span><span class="scoreline">Бали: <b>${score}</b> / ${cases.length}</span></div>
+ <div class="progress"><span style="width:${index/cases.length*100}%"></span></div>
+ <h2>${c.title}</h2>
+ <div class="scenario">${c.scene}</div>
+ <p class="question">${c.question}</p>
+ <div class="answers">${c.answers.map((a,i)=>`<button class="answer ${selected===i?'selected':''}" data-index="${i}" ${answered?'disabled':''}><span class="letter">${String.fromCharCode(65+i)}</span><span>${a}</span></button>`).join("")}</div>
+ <div id="feedback"></div>
+ <div class="actions"><button class="secondary" id="restart">Почати спочатку</button><button class="primary" id="mainbtn" ${selected===null?'disabled':''}>Перевірити відповідь</button></div>`;
+ root.querySelectorAll(".answer").forEach(btn=>btn.addEventListener("click",()=>{if(answered)return;selected=Number(btn.dataset.index);render()}));
+ root.querySelector("#restart").addEventListener("click",reset);
+ root.querySelector("#mainbtn").addEventListener("click",()=>{
+   if(!answered){answered=true;if(selected===c.correct)score++;renderFeedback();root.querySelectorAll(".answer").forEach((b,i)=>{b.disabled=true;if(i===c.correct)b.classList.add("correct");if(i===selected&&i!==c.correct)b.classList.add("wrong")});const b=root.querySelector("#mainbtn");b.textContent=index===cases.length-1?"Завершити розслідування":"Наступна справа";b.disabled=false;}
+   else{index++;selected=null;answered=false;render();}
+ });
+ if(answered)renderFeedback();
+}
+function renderFeedback(){
+ const c=cases[index],ok=selected===c.correct;
+ const f=root.querySelector("#feedback");
+ f.innerHTML=`<div class="feedback ${ok?'good':'bad'}"><strong>${ok?'✓ Правильно! +1 бал':'✕ Не зовсім. Правильне рішення:'}</strong>${c.explanation}</div>`;
+}
+function finish(){
+ const percent=Math.round(score/cases.length*100);
+ let msg=score===5?"Чудова робота! Ти впевнено розпізнаєш ці типові кіберзагрози.":score>=3?"Непогано! Переглянь пояснення до помилкових рішень і спробуй ще раз.":"Кібербезпека потребує уважності. Повтори правила та пройди справи ще раз.";
+ root.innerHTML=`<div class="finish"><div class="kicker">Розслідування завершено</div><h2>🛡️ Підсумок кібердетектива</h2><div class="bigscore">${score} / ${cases.length}</div><p>${percent}% правильних відповідей</p><p>${msg}</p><div class="actions" style="justify-content:center"><button class="primary" id="again">Пройти ще раз</button></div></div>`;
+ root.querySelector("#again").addEventListener("click",reset);
+}
+function reset(){index=0;selected=null;score=0;answered=false;render()}
+render();
+</script>
+</body>
+</html>
