@@ -1,0 +1,560 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Сортувальник графіки</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@500;700&display=swap">
+<style>
+  /* Layout: ten pictures on top, two big bins below (raster, vector). Every subject appears twice, once per type, so the only way to tell them apart is to zoom in. */
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #17202e;
+    --muted: #566176;
+    --line: #d3dae7;
+    --raster: #2f6fdb;
+    --vector: #187a50;
+    --on-chip: #ffffff;
+    --good: #187a50;
+    --bad: #b3261e;
+    --font-body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-display: "Unbounded", "Onest", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10151e;
+      --surface: #182030;
+      --ink: #e8edf6;
+      --muted: #9aa6bb;
+      --line: #2b3647;
+      --raster: #6b9cf5;
+      --vector: #4cc08a;
+      --on-chip: #0e131b;
+      --good: #4cc08a;
+      --bad: #f28b82;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151e;
+    --surface: #182030;
+    --ink: #e8edf6;
+    --muted: #9aa6bb;
+    --line: #2b3647;
+    --raster: #6b9cf5;
+    --vector: #4cc08a;
+    --on-chip: #0e131b;
+    --good: #4cc08a;
+    --bad: #f28b82;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    padding-block: 28px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  h1, h2 { font-family: var(--font-display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.2; }
+  h1 { font-size: clamp(1.5rem, 4.2vw, 2.3rem); }
+  h2 { font-size: clamp(1.1rem, 2.6vw, 1.4rem); }
+  p { margin: 0; }
+  .lead { color: var(--muted); max-width: 64ch; margin-top: 10px; }
+
+  .status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; font-variant-numeric: tabular-nums; }
+  .status b { font-weight: 600; }
+  .btn {
+    font: inherit; font-weight: 500; color: var(--ink); background: var(--surface);
+    border: 1.5px solid var(--ink); border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn:focus-visible, .pick:focus-visible, .zbtn:focus-visible, .bucket-head:focus-visible {
+    outline: 3px solid var(--ink); outline-offset: 3px;
+  }
+
+  .pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; min-height: 60px; }
+  .card { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .pick {
+    font: inherit; color: var(--ink); background: var(--surface); text-align: center;
+    border: 1.5px solid var(--line); border-radius: 10px; padding: 8px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0;
+  }
+  .pick:hover { border-color: var(--muted); }
+  .pick[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ink); }
+  .pick:disabled { cursor: default; }
+  .frame {
+    display: block; position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden;
+    border-radius: 6px; border: 1.5px solid var(--line); background: var(--bg);
+  }
+  .frame canvas, .frame svg { display: block; width: 100%; height: 100%; transform-origin: 0 0; }
+  .frame canvas.px { image-rendering: pixelated; }
+  .frame.zoomed::after {
+    content: "×6"; position: absolute; top: 6px; right: 6px; font-size: .75rem; font-weight: 600;
+    background: var(--ink); color: var(--bg); padding: 1px 7px; border-radius: 6px;
+  }
+  .cap { font-size: .9rem; font-weight: 500; }
+  .zbtn {
+    font: inherit; font-size: .85rem; color: var(--ink); background: var(--surface);
+    border: 1.5px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  }
+  .zbtn:hover { border-color: var(--muted); }
+  .zbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .shake { animation: shake .35s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+  .msg {
+    min-height: 3.4em; padding: 10px 14px; border-radius: 10px; background: var(--surface);
+    border: 1.5px dashed var(--line); color: var(--muted);
+  }
+  .msg.ok { color: var(--good); border-style: solid; border-color: var(--good); }
+  .msg.bad { color: var(--bad); border-style: solid; border-color: var(--bad); }
+  .msg strong { font-weight: 600; }
+
+  .buckets { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .bucket {
+    background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px;
+    display: flex; flex-direction: column; min-width: 0;
+  }
+  .bucket-head {
+    font: inherit; text-align: left; color: var(--ink); background: none; border: 0; cursor: pointer;
+    padding: 14px; display: flex; flex-direction: column; gap: 8px; border-radius: 14px 14px 0 0;
+  }
+  .bucket-head:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .chip {
+    align-self: flex-start; background: var(--c); color: var(--on-chip);
+    font-family: var(--font-display); font-weight: 500; font-size: .95rem; padding: 4px 10px; border-radius: 6px;
+  }
+  .def { font-size: .95rem; }
+  .tools { font-size: .82rem; color: var(--muted); }
+  .placed {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px;
+    padding: 0 14px 14px; min-height: 108px; align-content: start;
+  }
+  .placed .pick { padding: 4px; border-radius: 8px; background: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+  .placed .cap { font-size: .75rem; }
+  .placed .zbtn { display: none; }
+
+  .result {
+    padding: 18px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--ink);
+    display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  }
+  .result .row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Сортувальник графіки</h1>
+    <p class="lead">Деякі картинки здаються однаковими, але створені по-різному. Натисни «Збільшити» під картинкою й придивись до її краю. Потім обери картинку і натисни на вид графіки, до якого вона належить.</p>
+  </header>
+
+  <div class="status">
+    <span>Розсортовано <b id="done">0</b> з <b id="total">10</b></span>
+    <span>Помилок <b id="err">0</b></span>
+    <button type="button" class="btn" id="reset">Почати знову</button>
+  </div>
+
+  <section aria-label="Картинки для сортування">
+    <div class="pool" id="pool"></div>
+  </section>
+
+  <div class="msg" id="msg" role="status" aria-live="polite">Обери картинку, щоб почати.</div>
+
+  <section aria-label="Види графіки">
+    <div class="buckets" id="buckets"></div>
+  </section>
+
+  <div class="result" id="result" hidden>
+    <h2 id="result-title"></h2>
+    <p id="result-text"></p>
+    <div class="row">
+      <button type="button" class="btn" id="zall" aria-pressed="false">Збільшити всі картинки</button>
+      <button type="button" class="btn" id="again">Сортувати ще раз</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TAU = Math.PI * 2;
+  var Z = 6;
+
+  /* ---------- drawing helpers (raster pictures are painted onto a 200x200 canvas) ---------- */
+  function mulberry(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function grain(c, amt, seed) {
+    var rnd = mulberry(seed);
+    var im = c.getImageData(0, 0, 200, 200), d = im.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var n = (rnd() - 0.5) * 2 * amt;
+      d[i] += n; d[i + 1] += n; d[i + 2] += n;
+    }
+    c.putImageData(im, 0, 0);
+  }
+  function lg(c, x0, y0, x1, y1, stops) {
+    var g = c.createLinearGradient(x0, y0, x1, y1);
+    stops.forEach(function (s) { g.addColorStop(s[0], s[1]); });
+    return g;
+  }
+  function rg(c, x0, y0, r0, x1, y1, r1, stops) {
+    var g = c.createRadialGradient(x0, y0, r0, x1, y1, r1);
+    stops.forEach(function (s) { g.addColorStop(s[0], s[1]); });
+    return g;
+  }
+  function circle(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, TAU); }
+
+  /* ---------- raster pictures ---------- */
+  function rApple(c) {
+    c.fillStyle = lg(c, 0, 0, 0, 200, [[0, "#f6e7cf"], [1, "#d9b98a"]]); c.fillRect(0, 0, 200, 200);
+    c.save(); c.translate(100, 164); c.scale(1, 0.16);
+    c.fillStyle = rg(c, 0, 0, 0, 0, 0, 62, [[0, "rgba(60,35,10,.6)"], [1, "rgba(60,35,10,0)"]]);
+    circle(c, 0, 0, 62); c.fill(); c.restore();
+    c.fillStyle = rg(c, 80, 92, 6, 100, 118, 74, [[0, "#ff6b5e"], [0.45, "#d1281f"], [1, "#6e0f10"]]);
+    c.beginPath(); c.moveTo(128, 115); c.arc(80, 115, 48, 0, TAU); c.moveTo(168, 115); c.arc(120, 115, 48, 0, TAU); c.fill();
+    c.save(); c.translate(64, 92); c.rotate(-0.6); c.scale(1, 0.55);
+    c.fillStyle = rg(c, 0, 0, 0, 0, 0, 20, [[0, "rgba(255,255,255,.75)"], [1, "rgba(255,255,255,0)"]]);
+    circle(c, 0, 0, 20); c.fill(); c.restore();
+    c.strokeStyle = "#4a2c12"; c.lineWidth = 5; c.lineCap = "round";
+    c.beginPath(); c.moveTo(100, 74); c.quadraticCurveTo(103, 58, 108, 46); c.stroke();
+    c.save(); c.translate(121, 56); c.rotate(-0.5);
+    c.fillStyle = lg(c, -20, 0, 20, 0, [[0, "#2f8f3a"], [1, "#7bd36a"]]);
+    c.beginPath(); c.ellipse(0, 0, 20, 9, 0, 0, TAU); c.fill(); c.restore();
+    grain(c, 16, 1);
+  }
+
+  function cloud(c, x, y, s) {
+    [[0, 0, 16], [14, 4, 13], [-14, 5, 12], [6, -8, 12]].forEach(function (p) {
+      c.fillStyle = rg(c, x + p[0] * s, y + p[1] * s, 0, x + p[0] * s, y + p[1] * s, p[2] * s,
+        [[0, "rgba(255,255,255,.95)"], [1, "rgba(255,255,255,0)"]]);
+      circle(c, x + p[0] * s, y + p[1] * s, p[2] * s); c.fill();
+    });
+  }
+  function rBalloon(c) {
+    c.fillStyle = lg(c, 0, 0, 0, 200, [[0, "#4f9fe3"], [1, "#cfeaff"]]); c.fillRect(0, 0, 200, 200);
+    cloud(c, 38, 160, 1.1); cloud(c, 158, 150, 1); cloud(c, 156, 40, 0.9); cloud(c, 34, 44, 0.8);
+    c.strokeStyle = "#5a3b1d"; c.lineWidth = 1.5; c.lineCap = "round";
+    c.beginPath(); c.moveTo(70, 130); c.lineTo(88, 166); c.moveTo(130, 130); c.lineTo(112, 166); c.moveTo(100, 143); c.lineTo(100, 166); c.stroke();
+    c.fillStyle = lg(c, 86, 0, 114, 0, [[0, "#6d4521"], [0.5, "#a46d35"], [1, "#59371a"]]); c.fillRect(86, 166, 28, 20);
+    c.save(); c.beginPath(); c.ellipse(100, 85, 48, 58, 0, 0, TAU); c.clip();
+    c.fillStyle = "#e0402a"; c.fillRect(0, 0, 200, 200);
+    c.fillStyle = lg(c, 83, 0, 117, 0, [[0, "#e3b52e"], [0.5, "#ffe27a"], [1, "#e3b52e"]]);
+    c.beginPath(); c.ellipse(100, 85, 17, 58, 0, 0, TAU); c.fill();
+    c.fillStyle = rg(c, 76, 56, 0, 76, 56, 100, [[0, "rgba(255,255,255,.4)"], [0.5, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,.5)"]]);
+    c.fillRect(0, 0, 200, 200);
+    c.restore();
+    grain(c, 14, 2);
+  }
+
+  function rTree(c) {
+    c.fillStyle = lg(c, 0, 0, 0, 170, [[0, "#8fd0f5"], [1, "#e6f6ff"]]); c.fillRect(0, 0, 200, 200);
+    c.fillStyle = lg(c, 0, 165, 0, 200, [[0, "#5aa04a"], [1, "#2f6d2b"]]); c.fillRect(0, 165, 200, 35);
+    c.fillStyle = lg(c, 92, 0, 108, 0, [[0, "#5a3a1c"], [0.5, "#8b5a2b"], [1, "#4a2f16"]]); c.fillRect(92, 115, 16, 60);
+    var crown = [[72, 100, 28], [128, 100, 28], [100, 80, 38]];
+    crown.forEach(function (k) {
+      c.fillStyle = rg(c, k[0] - k[2] * 0.3, k[1] - k[2] * 0.4, k[2] * 0.1, k[0], k[1], k[2],
+        [[0, "#7fd16a"], [0.55, "#3f9a3a"], [1, "#1f5f26"]]);
+      circle(c, k[0], k[1], k[2]); c.fill();
+    });
+    var rnd = mulberry(7);
+    for (var i = 0; i < 70; i++) {
+      var k = crown[Math.floor(rnd() * 3)];
+      var a = rnd() * TAU, d = rnd() * (k[2] - 9), r = 3 + rnd() * 4;
+      c.fillStyle = rnd() > 0.5 ? "rgba(150,230,110,.45)" : "rgba(20,70,25,.4)";
+      circle(c, k[0] + Math.cos(a) * d, k[1] + Math.sin(a) * d, r); c.fill();
+    }
+    grain(c, 16, 3);
+  }
+
+  function rHouse(c) {
+    c.fillStyle = lg(c, 0, 0, 0, 172, [[0, "#7cc3f0"], [1, "#eaf7ff"]]); c.fillRect(0, 0, 200, 200);
+    c.fillStyle = lg(c, 0, 168, 0, 200, [[0, "#6fb85a"], [1, "#3b7d2e"]]); c.fillRect(0, 168, 200, 32);
+    c.fillStyle = lg(c, 50, 0, 150, 0, [[0, "#f1dcb4"], [1, "#d1b583"]]); c.fillRect(50, 100, 100, 70);
+    c.fillStyle = lg(c, 0, 48, 0, 104, [[0, "#b5523a"], [1, "#7a2f20"]]);
+    c.beginPath(); c.moveTo(36, 104); c.lineTo(100, 48); c.lineTo(164, 104); c.closePath(); c.fill();
+    c.fillStyle = "rgba(0,0,0,.25)"; c.fillRect(50, 104, 100, 6);
+    [62, 116].forEach(function (x) {
+      c.fillStyle = lg(c, x, 116, x + 22, 138, [[0, "#cfeaff"], [1, "#5f9fd0"]]); c.fillRect(x, 116, 22, 22);
+      c.strokeStyle = "#f5f5f5"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(x + 11, 116); c.lineTo(x + 11, 138); c.moveTo(x, 127); c.lineTo(x + 22, 127); c.stroke();
+    });
+    c.fillStyle = lg(c, 91, 0, 109, 0, [[0, "#7a4a25"], [1, "#55321a"]]); c.fillRect(91, 132, 18, 38);
+    [[44, 170], [156, 170]].forEach(function (b) {
+      c.fillStyle = rg(c, b[0] - 4, b[1] - 5, 1, b[0], b[1], 13, [[0, "#78c95f"], [1, "#2d6e2a"]]);
+      circle(c, b[0], b[1], 13); c.fill();
+    });
+    grain(c, 15, 4);
+  }
+
+  function rSun(c) {
+    c.fillStyle = lg(c, 0, 0, 0, 120, [[0, "#1f1550"], [0.6, "#8e2f7a"], [1, "#e8553d"]]); c.fillRect(0, 0, 200, 120);
+    c.fillStyle = rg(c, 100, 120, 0, 100, 120, 95, [[0, "rgba(255,190,90,.55)"], [1, "rgba(255,190,90,0)"]]);
+    c.fillRect(0, 0, 200, 120);
+    c.fillStyle = rg(c, 100, 120, 0, 100, 120, 36, [[0, "#fff6c8"], [0.6, "#ffe08a"], [1, "#ffc65a"]]);
+    circle(c, 100, 120, 36); c.fill();
+    c.fillStyle = lg(c, 0, 120, 0, 200, [[0, "#223a6b"], [1, "#0b1630"]]); c.fillRect(0, 120, 200, 80);
+    var rnd = mulberry(5);
+    for (var i = 0; i < 26; i++) {
+      var w = 34 - i * 1.1 + rnd() * 8;
+      c.fillStyle = "rgba(255,205,120," + (0.55 - i * 0.015).toFixed(2) + ")";
+      c.fillRect(100 - w / 2 + (rnd() - 0.5) * 6, 124 + i * 3, w, 1.6);
+    }
+    grain(c, 14, 6);
+  }
+
+  /* ---------- vector pictures (flat shapes, crisp edges) ---------- */
+  var VEC = {
+    apple:
+      '<rect width="200" height="200" fill="#ffe8b8"/>' +
+      '<ellipse cx="100" cy="166" rx="56" ry="7" fill="#e7c98c"/>' +
+      '<circle cx="80" cy="115" r="48" fill="#e53935"/><circle cx="120" cy="115" r="48" fill="#e53935"/>' +
+      '<path d="M100 74 Q103 58 108 46" stroke="#6b3e1c" stroke-width="6" stroke-linecap="round" fill="none"/>' +
+      '<ellipse cx="121" cy="56" rx="20" ry="9" transform="rotate(-28 121 56)" fill="#43a047"/>',
+    balloon:
+      '<rect width="200" height="200" fill="#7fc7f2"/>' +
+      '<g fill="#ffffff"><circle cx="38" cy="160" r="14"/><circle cx="54" cy="165" r="11"/><circle cx="24" cy="166" r="10"/>' +
+      '<circle cx="156" cy="40" r="13"/><circle cx="171" cy="45" r="10"/><circle cx="143" cy="46" r="9"/></g>' +
+      '<g stroke="#5a3b1d" stroke-width="1.5" stroke-linecap="round" fill="none"><path d="M70 130 L88 166 M130 130 L112 166 M100 143 L100 166"/></g>' +
+      '<rect x="86" y="166" width="28" height="20" fill="#8a5a2b"/>' +
+      '<ellipse cx="100" cy="85" rx="48" ry="58" fill="#e8402a"/><ellipse cx="100" cy="85" rx="17" ry="58" fill="#ffd54a"/>',
+    tree:
+      '<rect width="200" height="200" fill="#bfe8fb"/><rect y="168" width="200" height="32" fill="#6bbf59"/>' +
+      '<rect x="92" y="115" width="16" height="58" fill="#8b5a2b"/>' +
+      '<g fill="#3fa34d"><circle cx="72" cy="100" r="28"/><circle cx="128" cy="100" r="28"/><circle cx="100" cy="80" r="38"/></g>',
+    house:
+      '<rect width="200" height="200" fill="#cdeefc"/><rect y="168" width="200" height="32" fill="#6bbf59"/>' +
+      '<rect x="50" y="100" width="100" height="70" fill="#f2d9a6"/>' +
+      '<polygon points="36,104 100,48 164,104" fill="#c0553b"/>' +
+      '<rect x="62" y="116" width="22" height="22" fill="#7fc0ee"/><rect x="116" y="116" width="22" height="22" fill="#7fc0ee"/>' +
+      '<rect x="91" y="132" width="18" height="38" fill="#8b5a2b"/>' +
+      '<circle cx="44" cy="170" r="13" fill="#4aa04a"/><circle cx="156" cy="170" r="13" fill="#4aa04a"/>',
+    sun:
+      '<rect width="200" height="200" fill="#8fd3ff"/>' +
+      '<g stroke="#ffb000" stroke-width="8" stroke-linecap="round" transform="rotate(22.5 100 100)">' +
+      '<line x1="148" y1="100" x2="170" y2="100"/><line x1="134" y1="134" x2="150" y2="150"/><line x1="100" y1="148" x2="100" y2="170"/>' +
+      '<line x1="66" y1="134" x2="50" y2="150"/><line x1="52" y1="100" x2="30" y2="100"/><line x1="66" y1="66" x2="50" y2="50"/>' +
+      '<line x1="100" y1="52" x2="100" y2="30"/><line x1="134" y1="66" x2="150" y2="50"/></g>' +
+      '<circle cx="100" cy="100" r="34" fill="#ffb000"/>'
+  };
+
+  var ITEMS = [
+    { id: 1, kind: "raster", name: "Яблуко", z: [33, 112], draw: rApple },
+    { id: 2, kind: "vector", name: "Яблуко", z: [33, 112], svg: VEC.apple },
+    { id: 3, kind: "raster", name: "Повітряна куля", z: [52, 85], draw: rBalloon },
+    { id: 4, kind: "vector", name: "Повітряна куля", z: [52, 85], svg: VEC.balloon },
+    { id: 5, kind: "raster", name: "Дерево", z: [44, 100], draw: rTree },
+    { id: 6, kind: "vector", name: "Дерево", z: [44, 100], svg: VEC.tree },
+    { id: 7, kind: "raster", name: "Будинок", z: [68, 76], draw: rHouse },
+    { id: 8, kind: "vector", name: "Будинок", z: [68, 76], svg: VEC.house },
+    { id: 9, kind: "raster", name: "Сонце", z: [71, 99], draw: rSun },
+    { id: 10, kind: "vector", name: "Сонце", z: [66, 100], svg: VEC.sun }
+  ];
+
+  var TYPES = [
+    { id: "raster", name: "Растрова графіка", c: "var(--raster)",
+      def: "Картинка з крихітних кольорових квадратиків, пікселів. Так зберігаються фотографії та малюнки з Paint.",
+      tools: "Приклади: фото з телефона, скріншот · формати JPG, PNG" },
+    { id: "vector", name: "Векторна графіка", c: "var(--vector)",
+      def: "Картинка з простих фігур і ліній, які комп'ютер малює за формулами. Так створюють логотипи й іконки.",
+      tools: "Приклади: логотип, іконка для сайту · формат SVG" }
+  ];
+
+  var WHY = {
+    raster: "Це растрова графіка. Вона складається з пікселів: при збільшенні край стає східцями з квадратиків, а кольори переходять плавно, як на фото.",
+    vector: "Це векторна графіка. Вона складається з фігур і ліній, які комп'ютер малює за формулами, тому навіть при сильному збільшенні краї лишаються гладкими."
+  };
+
+  var pool = document.getElementById("pool");
+  var bucketsEl = document.getElementById("buckets");
+  var msg = document.getElementById("msg");
+  var doneEl = document.getElementById("done");
+  var errEl = document.getElementById("err");
+  var totalEl = document.getElementById("total");
+  var resultEl = document.getElementById("result");
+  var zall = document.getElementById("zall");
+  var selected = null, done = 0, errors = 0;
+
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function say(html, cls) { msg.className = "msg" + (cls ? " " + cls : ""); msg.innerHTML = html; }
+  function esc(s) { return s.replace(/[&<>"]/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]; }); }
+  function findItem(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; }
+
+  function makeCard(it) {
+    var card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = it.id;
+    card.innerHTML =
+      '<button type="button" class="pick" aria-pressed="false" aria-label="Обрати картинку: ' + esc(it.name) + '">' +
+      '<span class="frame"></span><span class="cap">' + esc(it.name) + '</span></button>' +
+      '<button type="button" class="zbtn" aria-pressed="false">Збільшити</button>';
+    var frame = card.querySelector(".frame");
+    if (it.kind === "raster") {
+      var cv = document.createElement("canvas");
+      cv.width = 200; cv.height = 200;
+      cv.setAttribute("role", "img"); cv.setAttribute("aria-label", it.name);
+      frame.appendChild(cv);
+      it.draw(cv.getContext("2d"));
+    } else {
+      frame.innerHTML = '<svg viewBox="0 0 200 200" role="img" aria-label="' + esc(it.name) + '">' + it.svg + '</svg>';
+    }
+    return card;
+  }
+
+  function setZoom(card, on) {
+    var it = findItem(Number(card.dataset.id));
+    var frame = card.querySelector(".frame");
+    var zb = card.querySelector(".zbtn");
+    var ox = it.z[0], oy = it.z[1];
+    if (it.kind === "raster") {
+      var cv = frame.querySelector("canvas");
+      if (on) {
+        cv.style.transform = "translate(" + (50 - ox * Z / 2) + "%, " + (50 - oy * Z / 2) + "%) scale(" + Z + ")";
+        cv.classList.add("px");
+      } else {
+        cv.style.transform = "";
+        cv.classList.remove("px");
+      }
+    } else {
+      var sv = frame.querySelector("svg");
+      if (on) {
+        var w = 200 / Z;
+        sv.setAttribute("viewBox", (ox - w / 2) + " " + (oy - w / 2) + " " + w + " " + w);
+      } else {
+        sv.setAttribute("viewBox", "0 0 200 200");
+      }
+    }
+    frame.classList.toggle("zoomed", on);
+    zb.setAttribute("aria-pressed", on ? "true" : "false");
+    zb.textContent = on ? "Зменшити" : "Збільшити";
+  }
+
+  function build() {
+    selected = null; done = 0; errors = 0;
+    doneEl.textContent = "0"; errEl.textContent = "0"; totalEl.textContent = ITEMS.length;
+    resultEl.hidden = true;
+    zall.setAttribute("aria-pressed", "false");
+    zall.textContent = "Збільшити всі картинки";
+    say("Обери картинку, щоб почати.");
+
+    pool.innerHTML = "";
+    shuffle(ITEMS).forEach(function (it) { pool.appendChild(makeCard(it)); });
+
+    bucketsEl.innerHTML = "";
+    TYPES.forEach(function (t) {
+      var d = document.createElement("div");
+      d.className = "bucket";
+      d.dataset.type = t.id;
+      d.style.setProperty("--c", t.c);
+      d.innerHTML =
+        '<button type="button" class="bucket-head" aria-label="Покласти обрану картинку в категорію: ' + esc(t.name) + '">' +
+        '<span class="chip">' + esc(t.name) + '</span>' +
+        '<span class="def">' + esc(t.def) + '</span>' +
+        '<span class="tools">' + esc(t.tools) + '</span></button>' +
+        '<div class="placed"></div>';
+      bucketsEl.appendChild(d);
+    });
+  }
+
+  function clearSelection() {
+    Array.prototype.forEach.call(pool.querySelectorAll(".pick"), function (p) { p.setAttribute("aria-pressed", "false"); });
+    selected = null;
+  }
+
+  pool.addEventListener("click", function (e) {
+    var zb = e.target.closest(".zbtn");
+    if (zb) {
+      var c1 = zb.closest(".card");
+      setZoom(c1, zb.getAttribute("aria-pressed") !== "true");
+      return;
+    }
+    var pick = e.target.closest(".pick");
+    if (!pick) return;
+    var wasOn = pick.getAttribute("aria-pressed") === "true";
+    clearSelection();
+    if (wasOn) {
+      say("Обери картинку, щоб почати.");
+    } else {
+      pick.setAttribute("aria-pressed", "true");
+      selected = Number(pick.closest(".card").dataset.id);
+      say("Тепер натисни на вид графіки, до якого належить ця картинка. Не впевнений? Натисни «Збільшити» під нею.");
+    }
+  });
+
+  bucketsEl.addEventListener("click", function (e) {
+    var bucket = e.target.closest(".bucket");
+    if (!bucket) return;
+    if (e.target.closest(".placed")) return;
+    if (selected === null) { say("Спочатку обери картинку зверху."); return; }
+    var item = findItem(selected);
+    var card = pool.querySelector('.card[data-id="' + selected + '"]');
+    if (item.kind === bucket.dataset.type) {
+      setZoom(card, false);
+      var pick = card.querySelector(".pick");
+      pick.setAttribute("aria-pressed", "false");
+      pick.disabled = true;
+      card.classList.add("is-placed");
+      bucket.querySelector(".placed").appendChild(card);
+      selected = null;
+      done++;
+      doneEl.textContent = done;
+      say("<strong>Правильно.</strong> " + esc(WHY[item.kind]), "ok");
+      if (done === ITEMS.length) finish();
+    } else {
+      errors++;
+      errEl.textContent = errors;
+      setZoom(card, true);
+      var pk = card.querySelector(".pick");
+      pk.classList.remove("shake"); void pk.offsetWidth; pk.classList.add("shake");
+      say("<strong>Не зовсім.</strong> Я збільшив цю картинку. Подивись на її край: він складається з квадратиків чи лишається гладким?", "bad");
+    }
+  });
+
+  function finish() {
+    var title, text;
+    if (errors === 0) {
+      title = "Без жодної помилки";
+      text = "Ти точно відрізняєш растрову графіку від векторної. Натисни «Збільшити всі картинки» і перевір себе ще раз.";
+    } else if (errors <= 3) {
+      title = "Дуже добре";
+      text = "Помилок: " + errors + ". Збільш усі картинки й порівняй краї в обох групах, а потім спробуй пройти без помилок.";
+    } else {
+      title = "Непогана розминка";
+      text = "Помилок: " + errors + ". Збільш усі картинки: у растрової групи краї з квадратиків, у векторної вони гладкі. Потім спробуй ще раз.";
+    }
+    document.getElementById("result-title").textContent = title;
+    document.getElementById("result-text").textContent = text;
+    resultEl.hidden = false;
+  }
+
+  zall.addEventListener("click", function () {
+    var on = zall.getAttribute("aria-pressed") !== "true";
+    Array.prototype.forEach.call(bucketsEl.querySelectorAll(".card"), function (c) { setZoom(c, on); });
+    zall.setAttribute("aria-pressed", on ? "true" : "false");
+    zall.textContent = on ? "Повернути розмір" : "Збільшити всі картинки";
+  });
+  document.getElementById("reset").addEventListener("click", build);
+  document.getElementById("again").addEventListener("click", function () { build(); window.scrollTo(0, 0); });
+
+  build();
+})();
+</script>
+
+</body></html>
