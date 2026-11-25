@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фінансові засоби в Excel | Інтерактивний тренажер 10 клас</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        excel: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .excel-table th, .excel-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+        .excel-header {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #334155;
+            text-align: center;
+        }
+        .excel-row-num {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            width: 40px;
+        }
+        .tab-sub-btn.active {
+            border-bottom: 3px solid #16a34a;
+            color: #16a34a;
+            font-weight: 600;
+            background-color: #f0fdf4;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-excel-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-excel-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white text-excel-800 p-2 rounded-lg font-bold text-xl flex items-center justify-center w-10 h-10 shadow">
+                        <i class="fa-solid font-mono">XLS</i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Фінансові засоби в Excel</h1>
+                        <p class="text-xs text-excel-100 opacity-90">Інтерактивна практична вправа для 10 класу</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Tabs (STRICT ORDER 1-4) -->
+                <nav class="hidden md:flex space-x-1">
+                    <button id="nav-btn-calc" onclick="switchMainTab('calc')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 bg-excel-900 text-white shadow-inner">
+                        <i class="fa-solid fa-calculator"></i> 1. Розрахунки та Графіки
+                    </button>
+                    <button id="nav-btn-compare" onclick="switchMainTab('compare')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium hover:bg-excel-700 transition flex items-center gap-2 text-excel-100">
+                        <i class="fa-solid fa-code-compare"></i> 2. Порівняння кредитів
+                    </button>
+                    <button id="nav-btn-guide" onclick="switchMainTab('guide')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium hover:bg-excel-700 transition flex items-center gap-2 text-excel-100">
+                        <i class="fa-solid fa-book-open"></i> 3. Довідник Excel
+                    </button>
+                    <button id="nav-btn-trainer" onclick="switchMainTab('trainer')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium hover:bg-excel-700 transition flex items-center gap-2 text-excel-100">
+                        <i class="fa-solid fa-graduation-cap"></i> 4. Тренажер формул
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-toggle" class="p-2 rounded-md hover:bg-excel-700 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-excel-900 px-4 pt-2 pb-4 space-y-1 border-t border-excel-700">
+            <button onclick="switchMainTab('calc')" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-excel-800 flex items-center gap-3">
+                <i class="fa-solid fa-calculator w-5"></i> 1. Розрахунки та Графіки
+            </button>
+            <button onclick="switchMainTab('compare')" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-excel-100 hover:bg-excel-800 flex items-center gap-3">
+                <i class="fa-solid fa-code-compare w-5"></i> 2. Порівняння кредитів
+            </button>
+            <button onclick="switchMainTab('guide')" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-excel-100 hover:bg-excel-800 flex items-center gap-3">
+                <i class="fa-solid fa-book-open w-5"></i> 3. Довідник Excel
+            </button>
+            <button onclick="switchMainTab('trainer')" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-excel-100 hover:bg-excel-800 flex items-center gap-3">
+                <i class="fa-solid fa-graduation-cap w-5"></i> 4. Тренажер формул
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- GLOBAL CONTROL PANEL (Visible in Tabs 1 & 2) -->
+        <section id="global-controls" class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-excel-600"></i> Інтерактивна Панель Вхідних Даних (Параметри)
+                </h2>
+                <span class="text-xs bg-excel-100 text-excel-800 font-semibold px-2.5 py-1 rounded-full">Зміни перераховуються миттєво</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Sum Input -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="input-sum" class="text-sm font-semibold text-slate-700">Сума коштів (грн):</label>
+                        <span id="display-sum" class="font-mono font-bold text-excel-700 bg-excel-50 px-2 py-0.5 rounded border border-excel-200">100,000 ₴</span>
+                    </div>
+                    <input type="range" id="input-sum" min="10000" max="500000" step="5000" value="100000" class="w-full accent-excel-600 cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-400 font-mono">
+                        <span>10 000 ₴</span>
+                        <span>500 000 ₴</span>
+                    </div>
+                </div>
+
+                <!-- Rate Input -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="input-rate" class="text-sm font-semibold text-slate-700">Річна ставка (%):</label>
+                        <span id="display-rate" class="font-mono font-bold text-excel-700 bg-excel-50 px-2 py-0.5 rounded border border-excel-200">18.0 %</span>
+                    </div>
+                    <input type="range" id="input-rate" min="1" max="40" step="0.5" value="18" class="w-full accent-excel-600 cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-400 font-mono">
+                        <span>1.0%</span>
+                        <span>40.0%</span>
+                    </div>
+                </div>
+
+                <!-- Term Input -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="input-term" class="text-sm font-semibold text-slate-700">Термін (місяців):</label>
+                        <span id="display-term" class="font-mono font-bold text-excel-700 bg-excel-50 px-2 py-0.5 rounded border border-excel-200">12 міс.</span>
+                    </div>
+                    <input type="range" id="input-term" min="3" max="36" step="1" value="12" class="w-full accent-excel-600 cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-400 font-mono">
+                        <span>3 міс.</span>
+                        <span>36 міс.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 1: CALCULATIONS & CHARTS ==================== -->
+        <div id="tab-calc" class="main-tab-content space-y-6">
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <!-- Sub-tabs header -->
+                <div class="flex border-b border-slate-200 bg-slate-50 overflow-x-auto">
+                    <button id="mod-btn-deposit" onclick="switchSubModule('deposit')" class="tab-sub-btn active px-6 py-3 text-sm font-semibold text-slate-600 transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fa-solid fa-piggy-bank text-amber-500"></i> Депозит (виплата в кінці)
+                    </button>
+                    <button id="mod-btn-standard" onclick="switchSubModule('standard')" class="tab-sub-btn px-6 py-3 text-sm font-semibold text-slate-600 transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-blue-500"></i> Кредит: Стандартна схема
+                    </button>
+                    <button id="mod-btn-annuity" onclick="switchSubModule('annuity')" class="tab-sub-btn px-6 py-3 text-sm font-semibold text-slate-600 transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-split-up-and-left text-purple-500"></i> Кредит: Ануїтетна схема
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <!-- SUB-MODULE 1: DEPOSIT -->
+                    <div id="sub-deposit" class="sub-module-content space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-amber-50/70 rounded-xl p-5 border border-amber-200/80 space-y-4">
+                                <h3 class="font-bold text-amber-900 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-info text-amber-600"></i> Депозит з нарахованням в кінці
+                                </h3>
+                                <p class="text-sm text-amber-950 leading-relaxed">
+                                    При такій схемі відсотки нараховуються за увесь термін і виплачуються **разом з вкладом в кінці року або строку**.
+                                </p>
+                                <div class="bg-white p-4 rounded-lg border border-amber-200 shadow-sm space-y-3">
+                                    <div>
+                                        <span class="text-xs text-slate-500 uppercase font-semibold">Початковий вклад:</span>
+                                        <p id="dep-initial" class="text-xl font-bold font-mono text-slate-800">100,000 ₴</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <span class="text-xs text-amber-700 uppercase font-semibold">Нараховані відсотки:</span>
+                                        <p id="dep-interest" class="text-2xl font-bold font-mono text-amber-600">+18,000 ₴</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <span class="text-xs text-slate-500 uppercase font-semibold">Сума в кінці терміну:</span>
+                                        <p id="dep-total" class="text-2xl font-bold font-mono text-excel-700">118,000 ₴</p>
+                                    </div>
+                                </div>
+                                <div class="bg-amber-100/60 p-3 rounded-lg text-xs font-mono text-amber-900 border border-amber-200">
+                                    <strong class="block mb-1 font-sans font-bold">Формула в Excel (UKR / ENG):</strong>
+                                    <code>=Сума + (Сума * Ставка% * (Місяці/12))</code>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between min-h-[300px]">
+                                <h4 class="text-sm font-semibold text-slate-700 mb-2">Накопичення вкладу по місяцях</h4>
+                                <div class="relative flex-1 h-64">
+                                    <canvas id="chart-deposit"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-MODULE 2: STANDARD CREDIT -->
+                    <div id="sub-standard" class="sub-module-content hidden space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-blue-50/70 rounded-xl p-5 border border-blue-200/80 space-y-4">
+                                <h3 class="font-bold text-blue-900 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-line text-blue-600"></i> Стандартна схема
+                                </h3>
+                                <p class="text-sm text-blue-950 leading-relaxed">
+                                    Тіло кредиту виплачується **рівними частинами**, а відсотки нараховуються на **залишок боргу**. Платіж щомісяця зменшується.
+                                </p>
+                                <div class="bg-white p-4 rounded-lg border border-blue-200 shadow-sm space-y-3">
+                                    <div>
+                                        <span class="text-xs text-slate-500 uppercase font-semibold">Перший платіж:</span>
+                                        <p id="std-first-pay" class="text-xl font-bold font-mono text-slate-800">0 ₴</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs text-slate-500 uppercase font-semibold">Останній платіж:</span>
+                                        <p id="std-last-pay" class="text-xl font-bold font-mono text-slate-800">0 ₴</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <span class="text-xs text-rose-600 uppercase font-semibold">Загальна переплата (%):</span>
+                                        <p id="std-total-interest" class="text-2xl font-bold font-mono text-rose-600">0 ₴</p>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-100/60 p-3 rounded-lg text-xs font-mono text-blue-900 border border-blue-200">
+                                    <strong class="block mb-1 font-sans font-bold">Формули в Excel (UKR / ENG):</strong>
+                                    <code>Тіло = $B$1 / $B$3</code><br>
+                                    <code>Відсотки = Залишок * ($B$2 / 12)</code>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 space-y-3">
+                                <h4 class="text-sm font-semibold text-slate-700">Графік платежів (Диференційований)</h4>
+                                <div class="max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                                    <table class="w-full text-left border-collapse excel-table">
+                                        <thead>
+                                            <tr class="excel-header sticky top-0 shadow-sm">
+                                                <th class="w-12">№</th>
+                                                <th>Залишок боргу</th>
+                                                <th>Виплата тіла</th>
+                                                <th>Виплата %</th>
+                                                <th>Загальний платіж</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-standard-body" class="font-mono text-slate-700"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-MODULE 3: ANNUITY CREDIT -->
+                    <div id="sub-annuity" class="sub-module-content hidden space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-purple-50/70 rounded-xl p-5 border border-purple-200/80 space-y-4">
+                                <h3 class="font-bold text-purple-900 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-arrows-split-up-and-left text-purple-600"></i> Ануїтетна схема
+                                </h3>
+                                <p class="text-sm text-purple-950 leading-relaxed">
+                                    Щомісячний платіж є **абсолютно однаковим** протягом усього терміну.
+                                </p>
+                                <div class="bg-white p-4 rounded-lg border border-purple-200 shadow-sm space-y-3">
+                                    <div>
+                                        <span class="text-xs text-purple-700 uppercase font-semibold">Фіксований щомісячний платіж:</span>
+                                        <p id="ann-monthly-pay" class="text-2xl font-bold font-mono text-purple-700">0 ₴</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <span class="text-xs text-slate-500 uppercase font-semibold">Загальна сума виплат:</span>
+                                        <p id="ann-total-pay" class="text-xl font-bold font-mono text-slate-800">0 ₴</p>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-2">
+                                        <span class="text-xs text-rose-600 uppercase font-semibold">Загальна переплата (%):</span>
+                                        <p id="ann-total-interest" class="text-2xl font-bold font-mono text-rose-600">0 ₴</p>
+                                    </div>
+                                </div>
+                                <div class="bg-purple-100/60 p-3 rounded-lg text-xs font-mono text-purple-900 border border-purple-200">
+                                    <strong class="block mb-1 font-sans font-bold">Вбудована функція Excel (UKR / ENG):</strong>
+                                    <code>=ПЛТ(Ставка/12; Термін; -Сума)</code><br>
+                                    <code class="text-purple-700 font-semibold">=PMT(Rate/12; Nper; -Pv)</code>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-2 space-y-3">
+                                <h4 class="text-sm font-semibold text-slate-700">Графік платежів (Ануїтет)</h4>
+                                <div class="max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                                    <table class="w-full text-left border-collapse excel-table">
+                                        <thead>
+                                            <tr class="excel-header sticky top-0 shadow-sm">
+                                                <th class="w-12">№</th>
+                                                <th>Залишок боргу</th>
+                                                <th>Виплата тіла</th>
+                                                <th>Виплата %</th>
+                                                <th>Фіксований платіж</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-annuity-body" class="font-mono text-slate-700"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: CREDIT COMPARISON ==================== -->
+        <div id="tab-compare" class="main-tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6">
+                <div class="border-b border-slate-200 pb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-excel-600"></i> Порівняння схем кредитування
+                    </h2>
+                    <p class="text-sm text-slate-500">Порівняльний аналіз щомісячного навантаження та підсумкової переплати за вказаних параметрів.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Standard Card -->
+                    <div class="bg-blue-50/60 rounded-xl p-5 border border-blue-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-blue-900 text-lg">Стандартна (Диференційована)</h3>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-semibold">Спадна виплата</span>
+                        </div>
+                        <div class="space-y-1 font-mono text-sm">
+                            <div class="flex justify-between"><span>Перший платіж:</span> <strong id="comp-std-first" class="text-slate-800">0 ₴</strong></div>
+                            <div class="flex justify-between"><span>Останній платіж:</span> <strong id="comp-std-last" class="text-slate-800">0 ₴</strong></div>
+                            <div class="flex justify-between border-t border-blue-200 pt-2 text-base font-bold">
+                                <span class="font-sans">Загальна переплата:</span> <span id="comp-std-interest" class="text-rose-600">0 ₴</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Annuity Card -->
+                    <div class="bg-purple-50/60 rounded-xl p-5 border border-purple-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-purple-900 text-lg">Ануїтетна схема</h3>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2.5 py-1 rounded-full font-semibold">Рівномірна виплата</span>
+                        </div>
+                        <div class="space-y-1 font-mono text-sm">
+                            <div class="flex justify-between"><span>Щомісячно:</span> <strong id="comp-ann-monthly" class="text-slate-800">0 ₴</strong></div>
+                            <div class="flex justify-between"><span>Всього виплачено:</span> <strong id="comp-ann-total" class="text-slate-800">0 ₴</strong></div>
+                            <div class="flex justify-between border-t border-purple-200 pt-2 text-base font-bold">
+                                <span class="font-sans">Загальна переплата:</span> <span id="comp-ann-interest" class="text-rose-600">0 ₴</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart comparison -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                    <h4 class="text-sm font-semibold text-slate-700">Гістограма щомісячних платежів за обома схемами</h4>
+                    <div class="relative h-64">
+                        <canvas id="chart-comparison"></canvas>
+                    </div>
+                </div>
+
+                <!-- Verdict Box -->
+                <div class="p-5 rounded-xl border bg-amber-50/80 border-amber-200 space-y-2">
+                    <h4 class="font-bold text-amber-900 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i> Аналітичний висновок (Функція ЯКЩО / IF):
+                    </h4>
+                    <p id="comparison-verdict" class="text-sm text-amber-950 leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: EXCEL REFERENCE GUIDE ==================== -->
+        <div id="tab-guide" class="main-tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6">
+                <div class="border-b border-slate-200 pb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark text-excel-600"></i> Фінансові формули та інструменти в Excel (UKR / ENG)
+                    </h2>
+                    <p class="text-sm text-slate-500">Повний теоретичний довідник для розв'язування задач в Excel українською та англійською мовами.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- PMT -->
+                    <div class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3 hover:shadow-sm transition">
+                        <div class="flex items-center gap-2 text-excel-800 font-bold font-mono text-base flex-wrap">
+                            <span class="bg-excel-600 text-white px-2 py-0.5 rounded text-xs">Ануїтет</span>
+                            <span>ПЛТ / PMT</span>
+                        </div>
+                        <div class="space-y-1 font-mono text-xs">
+                            <p class="p-2 bg-emerald-100 text-emerald-900 rounded border border-emerald-200">UKR: <code>=ПЛТ(ставка; кпер; пс)</code></p>
+                            <p class="p-2 bg-purple-100 text-purple-900 rounded border border-purple-200">ENG: <code>=PMT(rate; nper; pv)</code></p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Обчислює рівномірний щомісячний платіж за ануїтетною схемою.<br>
+                            • <strong>ставка / rate</strong> — місячна ставка (річна / 12).<br>
+                            • <strong>кпер / nper</strong> — кількість місяців.<br>
+                            • <strong>пс / pv</strong> — початкова сума кредиту (знак мінус <code>-</code> перед сумою).
+                        </p>
+                    </div>
+
+                    <!-- SUM -->
+                    <div class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3 hover:shadow-sm transition">
+                        <div class="flex items-center gap-2 text-excel-800 font-bold font-mono text-base flex-wrap">
+                            <span class="bg-excel-600 text-white px-2 py-0.5 rounded text-xs">Сумування</span>
+                            <span>СУМ / SUM</span>
+                        </div>
+                        <div class="space-y-1 font-mono text-xs">
+                            <p class="p-2 bg-emerald-100 text-emerald-900 rounded border border-emerald-200">UKR: <code>=СУМ(E5:E16)</code></p>
+                            <p class="p-2 bg-purple-100 text-purple-900 rounded border border-purple-200">ENG: <code>=SUM(E5:E16)</code></p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Підраховує загальну суму всіх виплачених відсотків або платежів у стовпчику графіка.
+                        </p>
+                    </div>
+
+                    <!-- Absolute reference -->
+                    <div class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3 hover:shadow-sm transition">
+                        <div class="flex items-center gap-2 text-excel-800 font-bold font-mono text-base flex-wrap">
+                            <span class="bg-excel-600 text-white px-2 py-0.5 rounded text-xs">Посилання</span>
+                            <span>Абсолютні посилання ($A$1)</span>
+                        </div>
+                        <div class="p-2 bg-slate-200 text-slate-800 rounded font-mono text-xs">
+                            Приклад: <code>=$B$1 / 12</code> або <code>=$C$2 * E5</code>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Символ <code>$</code> фіксує (заморожує) номер рядка та стовпця під час автозаповнення формул у таблиці вниз.
+                        </p>
+                    </div>
+
+                    <!-- IF logic -->
+                    <div class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3 hover:shadow-sm transition">
+                        <div class="flex items-center gap-2 text-excel-800 font-bold font-mono text-base flex-wrap">
+                            <span class="bg-excel-600 text-white px-2 py-0.5 rounded text-xs">Логіка</span>
+                            <span>ЯКЩО / IF</span>
+                        </div>
+                        <div class="space-y-1 font-mono text-xs">
+                            <p class="p-2 bg-emerald-100 text-emerald-900 rounded border border-emerald-200">UKR: <code>=ЯКЩО(умова; істина; хибність)</code></p>
+                            <p class="p-2 bg-purple-100 text-purple-900 rounded border border-purple-200">ENG: <code>=IF(logical_test; value_true; value_false)</code></p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Використовується для перевірки умов та виведення відповідного повідомлення чи обчислення.
+                        </p>
+                    </div>
+
+                    <!-- Goal Seek -->
+                    <div class="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-3 md:col-span-2 hover:shadow-sm transition">
+                        <div class="flex items-center gap-2 text-excel-800 font-bold font-mono text-base">
+                            <span class="bg-excel-600 text-white px-2 py-0.5 rounded text-xs">Аналіз даних</span>
+                            <span>Підбір параметра (Goal Seek)</span>
+                        </div>
+                        <div class="p-2 bg-amber-100/70 text-amber-900 rounded font-mono text-xs border border-amber-200">
+                            Меню: <strong>Дані &rarr; Аналіз «Що-якщо» &rarr; Підбір параметра</strong> (ENG: <strong>Data &rarr; What-If Analysis &rarr; Goal Seek</strong>)
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Спеціальний інструмент Excel, який зворотним шляхом обчислює вхідне значення клітинки (наприклад, яка потрібна ставка чи сума), щоб підсумкова формула дала точно потрібний вам результат.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: FORMULA TRAINER (QUIZ) ==================== -->
+        <div id="tab-trainer" class="main-tab-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-excel-600"></i> Інтерактивний тренажер формул Excel
+                        </h2>
+                        <p class="text-sm text-slate-500">Дайте відповіді на запитання та перевірте свої знання формул (UKR / ENG).</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-excel-50 px-4 py-2 rounded-lg border border-excel-200 self-start md:self-auto">
+                        <span class="text-sm font-semibold text-excel-800">Результат:</span>
+                        <span id="quiz-score" class="font-mono font-bold text-excel-700 text-lg">0 / 4</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Container -->
+                <div id="quiz-list" class="space-y-6"></div>
+
+                <!-- Reset Quiz Button -->
+                <div class="pt-4 border-t border-slate-200 flex justify-end">
+                    <button onclick="resetQuiz()" class="px-5 py-2.5 bg-slate-700 text-white font-medium text-sm rounded-lg hover:bg-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Спробувати знову
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-4 border-t border-slate-700 text-center text-xs mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>Навчальний веб-додаток з інформатики для 10 класу</span>
+            <span>Тема: Фінансові засоби для складних обчислень в Excel</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // App State
+        const state = {
+            sum: 100000,
+            rate: 18,
+            term: 12,
+            activeTab: 'calc',
+            activeSubModule: 'deposit'
+        };
+
+        // Chart Instances
+        let chartDeposit = null;
+        let chartComparison = null;
+
+        // Quiz Data
+        const quizData = [
+            {
+                id: 1,
+                title: "1. Фіксація клітинок під час розтягування (Абсолютні посилання)",
+                question: "У клітинці B1 записано річну відсоткову ставку. Ви складаєте формулу в 5-му рядку графіка і плануєте протягнути її вниз на 24 місяці. Як правильно звернутися до клітинки B1?",
+                options: [
+                    "B1",
+                    "$B$1",
+                    "B$1$",
+                    "=B1!"
+                ],
+                correct: 1,
+                explanation: "Знаки долара ($B$1) заморожують і стовпець, і рядок, тому при копіюванні формули вниз посилання не буде зсуватися."
+            },
+            {
+                id: 2,
+                title: "2. Розрахунок ануїтетного щомісячного платежу",
+                question: "Яку функцію в Excel необхідно використати для обчислення рівного щомісячного платежу за ануїтетною схемою?",
+                options: [
+                    "=СУМ(ставка; термін)  [ENG: =SUM(rate; nper)]",
+                    "=ПЛТ(ставка/12; термін; -сума)  [ENG: =PMT(rate/12; nper; -pv)]",
+                    "=БС(сума; ставка)  [ENG: =FV(pv; rate)]",
+                    "=ПРОЦЕНТ(сума; термін)  [ENG: =PERCENT(pv; nper)]"
+                ],
+                correct: 1,
+                explanation: "Функція ПЛТ (в англійській версії PMT) призначена для розрахунку рівномірних періодичних платежів за кредитом."
+            },
+            {
+                id: 3,
+                title: "3. Стандартна (диференційована) схема повернення",
+                question: "Як обчислюється щомісячна виплата тіла кредиту (основного боргу) за стандартної схеми?",
+                options: [
+                    "Сума кредиту помножена на процентну ставку",
+                    "Сума кредиту поділена на кількість місяців терміну ($B$1/$B$3)",
+                    "Випадковим чином за допомогою функції СЛЧИС() / RAND()",
+                    "Щомісяця довільно за бажанням клієнта"
+                ],
+                correct: 1,
+                explanation: "За стандартної схеми тіло кредиту ділиться на рівні частини: Початкова Сума / Кількість місяців."
+            },
+            {
+                id: 4,
+                title: "4. Перевірка умов та текстовий висновок",
+                question: "За допомогою якої функції можна вивести текст 'Борг закрито', якщо залишок у клітинці C5 дорівнює 0, і 'Є борг' у протилежному випадку?",
+                options: [
+                    "=ЯКЩО(C5=0; \"Борг закрито\"; \"Є борг\")  [ENG: =IF(C5=0; \"Борг закрито\"; \"Є борг\")]",
+                    "=СУМ(C5=0; \"Борг закрито\")  [ENG: =SUM(C5=0; ...)]",
+                    "=ПЛТ(C5; 0; \"Борг закрито\")  [ENG: =PMT(C5; 0; ...)]",
+                    "=ЗНАЙТИ(C5; 0)  [ENG: =FIND(C5; 0)]"
+                ],
+                correct: 0,
+                explanation: "Логічна функція ЯКЩО (IF) перевіряє умову та повертає перше значення, якщо вона виконується, або друге значення — якщо ні."
+            }
+        ];
+
+        const userQuizAnswers = {};
+
+        // DOM Loaded Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initInputs();
+            initQuiz();
+            updateCalculations();
+
+            // Mobile menu toggle
+            const mobileBtn = document.getElementById('mobile-menu-toggle');
+            if (mobileBtn) {
+                mobileBtn.addEventListener('click', () => {
+                    const menu = document.getElementById('mobile-menu');
+                    menu.classList.toggle('hidden');
+                });
+            }
+        });
+
+        // Bind Range Inputs
+        function initInputs() {
+            const sumInput = document.getElementById('input-sum');
+            const rateInput = document.getElementById('input-rate');
+            const termInput = document.getElementById('input-term');
+
+            sumInput.addEventListener('input', (e) => {
+                state.sum = parseFloat(e.target.value);
+                document.getElementById('display-sum').innerText = formatCurrency(state.sum);
+                updateCalculations();
+            });
+
+            rateInput.addEventListener('input', (e) => {
+                state.rate = parseFloat(e.target.value);
+                document.getElementById('display-rate').innerText = state.rate.toFixed(1) + ' %';
+                updateCalculations();
+            });
+
+            termInput.addEventListener('input', (e) => {
+                state.term = parseInt(e.target.value);
+                document.getElementById('display-term').innerText = state.term + ' міс.';
+                updateCalculations();
+            });
+        }
+
+        // Switch Main Navigation Tabs (Strict order: 1. calc, 2. compare, 3. guide, 4. trainer)
+        function switchMainTab(tabId) {
+            state.activeTab = tabId;
+
+            // Hide all tab contents
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Deactivate all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-excel-900', 'text-white', 'shadow-inner');
+                btn.classList.add('text-excel-100');
+            });
+
+            // Show selected tab content
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.remove('hidden');
+
+            // Activate button
+            const activeNavBtn = document.getElementById(`nav-btn-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.add('bg-excel-900', 'text-white', 'shadow-inner');
+                activeNavBtn.classList.remove('text-excel-100');
+            }
+
+            // Hide global controls in Tab 3 & Tab 4 for cleaner UI
+            const globalControls = document.getElementById('global-controls');
+            if (tabId === 'guide' || tabId === 'trainer') {
+                globalControls.classList.add('hidden');
+            } else {
+                globalControls.classList.remove('hidden');
+            }
+
+            // Mobile menu close
+            document.getElementById('mobile-menu').classList.add('hidden');
+
+            // Render charts if switching to tabs containing them
+            if (tabId === 'calc' && state.activeSubModule === 'deposit') {
+                renderDepositChart();
+            } else if (tabId === 'compare') {
+                renderComparisonChart();
+            }
+        }
+
+        // Switch Sub-modules inside Tab 1
+        function switchSubModule(subId) {
+            state.activeSubModule = subId;
+
+            document.querySelectorAll('.sub-module-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-sub-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(`sub-${subId}`).classList.remove('hidden');
+            document.getElementById(`mod-btn-${subId}`).classList.add('active');
+
+            if (subId === 'deposit') {
+                renderDepositChart();
+            }
+        }
+
+        // Calculation Trigger
+        function updateCalculations() {
+            calcDeposit();
+            calcStandard();
+            calcAnnuity();
+            updateComparison();
+        }
+
+        // Helpers
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH', maximumFractionDigits: 0 }).format(num);
+        }
+
+        // MODULE 1: DEPOSIT
+        function calcDeposit() {
+            const interest = state.sum * (state.rate / 100) * (state.term / 12);
+            const total = state.sum + interest;
+
+            document.getElementById('dep-initial').innerText = formatCurrency(state.sum);
+            document.getElementById('dep-interest').innerText = '+' + formatCurrency(interest);
+            document.getElementById('dep-total').innerText = formatCurrency(total);
+
+            if (state.activeTab === 'calc' && state.activeSubModule === 'deposit') {
+                renderDepositChart();
+            }
+        }
+
+        function renderDepositChart() {
+            const canvas = document.getElementById('chart-deposit');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const labels = [];
+            const dataValues = [];
+            const monthlyStep = (state.sum * (state.rate / 100)) / 12;
+
+            for (let i = 0; i <= state.term; i++) {
+                labels.push(`${i} міс`);
+                dataValues.push(state.sum + (monthlyStep * i));
+            }
+
+            if (chartDeposit) chartDeposit.destroy();
+
+            chartDeposit = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Сума вкладу з відсотками (грн)',
+                        data: dataValues,
+                        borderColor: '#16a34a',
+                        backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                        fill: true,
+                        tension: 0.2,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#15803d'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: { callback: v => v.toLocaleString('uk-UA') + ' ₴' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // MODULE 2: STANDARD CREDIT
+        let stdPaymentsList = [];
+        function calcStandard() {
+            const tbody = document.getElementById('table-standard-body');
+            tbody.innerHTML = '';
+
+            const principalMonthly = state.sum / state.term;
+            let remaining = state.sum;
+            let totalInterest = 0;
+            stdPaymentsList = [];
+
+            for (let i = 1; i <= state.term; i++) {
+                const interestMonthly = remaining * ((state.rate / 100) / 12);
+                const totalMonthly = principalMonthly + interestMonthly;
+                totalInterest += interestMonthly;
+
+                stdPaymentsList.push({ month: i, total: totalMonthly, principal: principalMonthly, interest: interestMonthly });
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="excel-row-num">${i}</td>
+                    <td>${formatCurrency(remaining)}</td>
+                    <td>${formatCurrency(principalMonthly)}</td>
+                    <td class="text-amber-700">${formatCurrency(interestMonthly)}</td>
+                    <td class="font-bold text-slate-800">${formatCurrency(totalMonthly)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                remaining -= principalMonthly;
+            }
+
+            document.getElementById('std-first-pay').innerText = formatCurrency(stdPaymentsList[0]?.total || 0);
+            document.getElementById('std-last-pay').innerText = formatCurrency(stdPaymentsList[stdPaymentsList.length - 1]?.total || 0);
+            document.getElementById('std-total-interest').innerText = formatCurrency(totalInterest);
+        }
+
+        // MODULE 3: ANNUITY CREDIT
+        let annPaymentsList = [];
+        function calcAnnuity() {
+            const tbody = document.getElementById('table-annuity-body');
+            tbody.innerHTML = '';
+
+            const r = (state.rate / 100) / 12;
+            const pmt = state.sum * (r * Math.pow(1 + r, state.term)) / (Math.pow(1 + r, state.term) - 1);
+            
+            let remaining = state.sum;
+            let totalInterest = 0;
+            annPaymentsList = [];
+
+            for (let i = 1; i <= state.term; i++) {
+                const interestMonthly = remaining * r;
+                const principalMonthly = pmt - interestMonthly;
+                totalInterest += interestMonthly;
+
+                annPaymentsList.push({ month: i, total: pmt, principal: principalMonthly, interest: interestMonthly });
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="excel-row-num">${i}</td>
+                    <td>${formatCurrency(Math.max(0, remaining))}</td>
+                    <td class="text-purple-700">${formatCurrency(principalMonthly)}</td>
+                    <td class="text-amber-700">${formatCurrency(interestMonthly)}</td>
+                    <td class="font-bold text-slate-800">${formatCurrency(pmt)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                remaining -= principalMonthly;
+            }
+
+            document.getElementById('ann-monthly-pay').innerText = formatCurrency(pmt);
+            document.getElementById('ann-total-pay').innerText = formatCurrency(pmt * state.term);
+            document.getElementById('ann-total-interest').innerText = formatCurrency(totalInterest);
+        }
+
+        // COMPARISON TAB
+        function updateComparison() {
+            const stdInterest = stdPaymentsList.reduce((acc, c) => acc + c.interest, 0);
+            const annInterest = annPaymentsList.reduce((acc, c) => acc + c.interest, 0);
+
+            document.getElementById('comp-std-first').innerText = formatCurrency(stdPaymentsList[0]?.total || 0);
+            document.getElementById('comp-std-last').innerText = formatCurrency(stdPaymentsList[stdPaymentsList.length - 1]?.total || 0);
+            document.getElementById('comp-std-interest').innerText = formatCurrency(stdInterest);
+
+            document.getElementById('comp-ann-monthly').innerText = formatCurrency(annPaymentsList[0]?.total || 0);
+            document.getElementById('comp-ann-total').innerText = formatCurrency((annPaymentsList[0]?.total || 0) * state.term);
+            document.getElementById('comp-ann-interest').innerText = formatCurrency(annInterest);
+
+            const diff = annInterest - stdInterest;
+            const verdict = document.getElementById('comparison-verdict');
+
+            if (diff > 0) {
+                verdict.innerHTML = `За поточних умов переплата за <strong>ануїтетною схемою</strong> більша на <strong class="text-rose-600">${formatCurrency(diff)}</strong>. Стандартна (диференційована) схема вимагає більших платежів на початку, але підсумково є економнішою. Ануїтет вигідний рівномірним навантаженням на сімейний бюджет.`;
+            } else {
+                verdict.innerHTML = `Переплати за обома схемами є майже ідентичними.`;
+            }
+
+            if (state.activeTab === 'compare') {
+                renderComparisonChart();
+            }
+        }
+
+        function renderComparisonChart() {
+            const canvas = document.getElementById('chart-comparison');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const labels = stdPaymentsList.map(d => `${d.month} м.`);
+            const stdData = stdPaymentsList.map(d => d.total);
+            const annData = annPaymentsList.map(d => d.total);
+
+            if (chartComparison) chartComparison.destroy();
+
+            chartComparison = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Стандартна схема',
+                            data: stdData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.75)'
+                        },
+                        {
+                            label: 'Ануїтетна схема',
+                            data: annData,
+                            backgroundColor: 'rgba(168, 85, 247, 0.75)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { callback: v => v.toLocaleString('uk-UA') + ' ₴' } }
+                    }
+                }
+            });
+        }
+
+        // QUIZ / TRAINER LOGIC
+        function initQuiz() {
+            const quizList = document.getElementById('quiz-list');
+            quizList.innerHTML = '';
+
+            quizData.forEach((q) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4';
+
+                let optionsHtml = '';
+                q.options.forEach((opt, idx) => {
+                    optionsHtml += `
+                        <label class="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-excel-500 transition">
+                            <input type="radio" name="quiz-q-${q.id}" value="${idx}" onchange="onQuizSelect(${q.id}, ${idx})" class="mt-1 accent-excel-600">
+                            <span class="text-sm font-mono text-slate-800">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-slate-800 text-base">${q.title}</h3>
+                        <span id="quiz-status-${q.id}" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 font-semibold">Не вирішено</span>
+                    </div>
+                    <p class="text-sm text-slate-600 leading-relaxed">${q.question}</p>
+                    <div class="space-y-2 font-mono">${optionsHtml}</div>
+                    <div id="quiz-feedback-${q.id}" class="hidden p-3.5 rounded-lg text-sm leading-relaxed"></div>
+                `;
+                quizList.appendChild(card);
+            });
+        }
+
+        function onQuizSelect(questionId, selectedOptionIdx) {
+            const q = quizData.find(item => item.id === questionId);
+            const feedback = document.getElementById(`quiz-feedback-${questionId}`);
+            const status = document.getElementById(`quiz-status-${questionId}`);
+
+            const isCorrect = (selectedOptionIdx === q.correct);
+            userQuizAnswers[questionId] = isCorrect;
+
+            feedback.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'border-emerald-300', 'bg-rose-100', 'text-rose-900', 'border-rose-300');
+
+            if (isCorrect) {
+                feedback.classList.add('bg-emerald-100', 'text-emerald-900', 'border', 'border-emerald-300');
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> <strong>Правильно!</strong> ${q.explanation}`;
+                status.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold';
+                status.innerText = 'Вірно';
+            } else {
+                feedback.classList.add('bg-rose-100', 'text-rose-900', 'border', 'border-rose-300');
+                feedback.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1.5"></i> <strong>Помилка.</strong> ${q.explanation}`;
+                status.className = 'text-xs px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-semibold';
+                status.innerText = 'Невірно';
+            }
+
+            // Update score
+            const scoreCount = Object.values(userQuizAnswers).filter(Boolean).length;
+            document.getElementById('quiz-score').innerText = `${scoreCount} / ${quizData.length}`;
+        }
+
+        function resetQuiz() {
+            for (let key in userQuizAnswers) {
+                delete userQuizAnswers[key];
+            }
+            document.getElementById('quiz-score').innerText = `0 / ${quizData.length}`;
+            initQuiz();
+        }
+    </script>
+</body>
+</html>
