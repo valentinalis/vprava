@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математичні функції в Excel — Інтерактивна вправа</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4;
+        }
+        .excel-grid {
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+        }
+        .excel-border {
+            border: 1px solid #cbd5e1;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="excel-grid min-h-screen flex flex-col text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-emerald-700 p-2 rounded-lg font-bold text-xl shadow">
+                    <i class="fa-solid font-mono font-bold text-2xl leading-none">fx</i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Математичні функції в Excel</h1>
+                    <p class="text-xs sm:text-sm text-emerald-100 hidden sm:block">Інтерактивний тренажер для учнів 8 класу</p>
+                </div>
+            </div>
+            
+            <!-- Tab Switching Buttons -->
+            <div class="flex bg-emerald-800 p-1 rounded-xl shadow-inner text-sm font-semibold">
+                <button id="nav-learn-btn" onclick="switchMainTab('learn')" class="px-4 py-2 rounded-lg bg-white text-emerald-800 shadow transition-all">
+                    <i class="fa-solid fa-book-open mr-1.5"></i>Вивчення
+                </button>
+                <button id="nav-quiz-btn" onclick="switchMainTab('quiz')" class="px-4 py-2 rounded-lg text-emerald-100 hover:text-white transition-all">
+                    <i class="fa-solid fa-gamepad mr-1.5"></i>Практика & Квіз
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col">
+
+        <!-- ================= LEARN TAB ================= -->
+        <section id="tab-learn" class="space-y-6">
+            
+            <!-- Welcome Alert -->
+            <div class="bg-emerald-100 border-l-4 border-emerald-500 p-4 rounded-r-xl shadow-sm flex items-start space-x-3">
+                <i class="fa-solid fa-lightbulb text-emerald-600 text-2xl mt-0.5"></i>
+                <div>
+                    <h3 class="font-bold text-emerald-900 text-lg">Вітаємо у світі функцій Excel!</h3>
+                    <p class="text-emerald-800 text-sm">
+                        Оберіть необхідну функцію зі списку ліворуч, вивчіть її синтаксис та експериментуйте з аргументами у реальному часі. 
+                        Зверніть увагу: у Excel назви функцій записуються великими англійськими літерами, а формули завжди починаються зі знака <code class="bg-emerald-200 text-emerald-900 px-1 py-0.5 rounded font-bold">=</code>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Interactive Learning Workbench -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Function Buttons Selector (Left Column) -->
+                <div class="lg:col-span-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-xs uppercase tracking-wider font-extrabold text-slate-400 mb-3 px-2">Каталог функцій (8 клас)</h2>
+                    <div id="function-list" class="space-y-1.5 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
+                        <!-- Dynamic Buttons Loaded by JS -->
+                    </div>
+                </div>
+
+                <!-- Function Details & Sandbox Card (Right Column) -->
+                <div class="lg:col-span-8 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                    
+                    <!-- Card Top Header -->
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white relative">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span id="fx-category" class="bg-emerald-800/60 text-emerald-100 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                    Математичні
+                                </span>
+                                <h2 id="fx-title" class="text-3xl font-extrabold mt-2 tracking-tight">ABS</h2>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl font-mono text-emerald-100 border border-white/20 text-sm sm:text-base">
+                                Синтаксис: <span id="fx-syntax-badge" class="font-bold text-white text-base sm:text-lg"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-6 space-y-6">
+                        
+                        <!-- Description -->
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Що робить ця функція?</h3>
+                            <p id="fx-description" class="text-slate-700 text-base leading-relaxed font-medium">
+                                Повертає модуль (абсолютну величину) числа. Модуль числа — це це число без знака «мінус».
+                            </p>
+                        </div>
+
+                        <!-- Arguments Info -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center">
+                                <i class="fa-solid fa-list-check mr-2 text-emerald-600"></i> Аргументи функції:
+                            </h3>
+                            <div id="fx-arguments-info" class="text-sm text-slate-700 font-mono">
+                                <!-- Dynamic Arguments List -->
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-100">
+
+                        <!-- Interactive Excel Sandbox / Calculator -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-base font-bold text-slate-800 flex items-center">
+                                    <i class="fa-solid fa-flask text-emerald-600 mr-2"></i> Інтерактивна лабораторія (Спробуй сам!)
+                                </h3>
+                                <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-semibold">
+                                    Змінюй значення в осередках!
+                                </span>
+                            </div>
+
+                            <!-- Excel Formula Bar Simulation -->
+                            <div class="bg-slate-100 p-2 rounded-xl border border-slate-300 flex items-center space-x-2 font-mono text-sm">
+                                <div class="bg-white border border-slate-300 text-slate-400 px-3 py-1.5 rounded font-bold">fx</div>
+                                <div id="formula-bar" class="flex-grow bg-white border border-slate-300 px-3 py-1.5 rounded font-semibold text-slate-800 tracking-wide overflow-x-auto whitespace-nowrap">
+                                    =ABS(-15)
+                                </div>
+                            </div>
+
+                            <!-- Interactive Input & Result Display Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                
+                                <!-- Inputs Container -->
+                                <div id="inputs-container" class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 space-y-3">
+                                    <!-- Dynamic Input Fields loaded by JS -->
+                                </div>
+
+                                <!-- Live Result Card -->
+                                <div class="bg-slate-900 text-white p-5 rounded-xl flex flex-col justify-between shadow-inner relative overflow-hidden">
+                                    <div class="absolute -right-4 -bottom-4 opacity-10 text-emerald-400 text-8xl font-mono select-none">
+                                        =
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Результат Excel:</span>
+                                        <div id="fx-live-result" class="text-3xl sm:text-4xl font-extrabold font-mono text-white tracking-tight break-all">
+                                            15
+                                        </div>
+                                    </div>
+                                    <div id="result-explanation" class="mt-4 text-xs text-slate-400 border-t border-slate-800 pt-2 font-mono">
+                                        Повернено абсолютне значення.
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ================= QUIZ & PRACTICE TAB ================= -->
+        <section id="tab-quiz" class="space-y-6 hidden">
+            
+            <!-- Quiz Header Stats -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-amber-100 text-amber-600 p-3 rounded-2xl">
+                        <i class="fa-solid fa-trophy text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-800">Перевірка знань: Математичні функції</h2>
+                        <p class="text-sm text-slate-500">Розв'яжіть завдання, обчисливши результат або обравши правильну відповідь</p>
+                    </div>
+                </div>
+
+                <!-- Progress & Score -->
+                <div class="flex items-center space-x-6 bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 w-full md:w-auto justify-around">
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 font-bold uppercase">Рахунок</span>
+                        <div id="quiz-score" class="text-2xl font-black text-emerald-600">0 / 0</div>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200"></div>
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 font-bold uppercase">Прогрес</span>
+                        <div id="quiz-progress-text" class="text-2xl font-black text-slate-700">1 / 10</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Main Card -->
+            <div id="quiz-card" class="bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8 space-y-6">
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+
+                <!-- Question Header -->
+                <div class="space-y-3">
+                    <span id="quiz-tag" class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                        Обчислення значення
+                    </span>
+                    <h3 id="quiz-question-text" class="text-xl sm:text-2xl font-bold text-slate-800">
+                        Яке значення поверне формула <code class="bg-slate-100 text-emerald-700 px-2 py-1 rounded border border-slate-200 font-mono">=SQRT(81)</code>?
+                    </h3>
+                </div>
+
+                <!-- Dynamic Question Body (Interactive options or input) -->
+                <div id="quiz-options-container" class="space-y-3 pt-2">
+                    <!-- Dynamic choices rendered by JS -->
+                </div>
+
+                <!-- Feedback Message Container -->
+                <div id="quiz-feedback" class="hidden p-4 rounded-xl font-medium text-sm flex items-center space-x-3">
+                    <i id="quiz-feedback-icon" class="text-xl"></i>
+                    <span id="quiz-feedback-text"></span>
+                </div>
+
+                <!-- Action Button -->
+                <div class="flex justify-end pt-4 border-t border-slate-100">
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all flex items-center space-x-2">
+                        <span>Наступне питання</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Finish Banner (Hidden by default) -->
+            <div id="quiz-finish-card" class="hidden bg-white rounded-2xl shadow-lg border border-slate-200 p-8 text-center space-y-6">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Чудова робота!</h2>
+                    <p class="text-slate-600">Ви пройшли всі практичні завдання на функції Excel.</p>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 max-w-sm mx-auto">
+                    <div class="text-sm text-slate-500 font-semibold">Ваш підсумковий результат:</div>
+                    <div id="final-score-text" class="text-4xl font-black text-emerald-600 mt-1">10 / 10</div>
+                    <div id="final-rating-badge" class="mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                        Відмінно!
+                    </div>
+                </div>
+                <div>
+                    <button onclick="restartQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl shadow-md transition-all inline-flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Пройти знову</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            Інтерактивний дидактичний матеріал з інформатики для 8 класу • MS Excel Математичні функції
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /* ================= DATABASE OF FUNCTIONS ================= */
+        const EXCEL_FUNCTIONS = [
+            {
+                id: 'abs',
+                name: 'ABS',
+                syntax: '=ABS(число)',
+                description: 'Обчислює модуль (абсолютне значення) числа. Вона перетворює будь-яке від\'ємне число на додатне, а додатні числа та нуль залишає без змін.',
+                argsInfo: '<code>число</code> — будь-яке дійсне число, модуль якого потрібно знайти.',
+                inputs: [
+                    { name: 'число', label: 'Число (чи посилання на осередок)', type: 'number', default: -15, step: 0.1 }
+                ],
+                compute: (args) => Math.abs(args[0]),
+                explain: (args, res) => `Модуль числа ${args[0]} дорівнює ${res}.`
+            },
+            {
+                id: 'int',
+                name: 'INT',
+                syntax: '=INT(число)',
+                description: 'Округляє число до найближчого меншого цілого числа. Зверніть увагу на від\'ємні числа: INT(-4.2) поверне -5, бо -5 менше за -4.2!',
+                argsInfo: '<code>число</code> — дійсне число, яке потрібно округлити до найближчого меншого цілого.',
+                inputs: [
+                    { name: 'число', label: 'Дійсне число', type: 'number', default: 8.9, step: 0.1 }
+                ],
+                compute: (args) => Math.floor(args[0]),
+                explain: (args, res) => `Найближче менше ціле для ${args[0]} — це ${res}.`
+            },
+            {
+                id: 'pi',
+                name: 'PI',
+                syntax: '=PI()',
+                description: 'Повертає математичну константу π (Пі), яка приблизно дорівнює 3,14159265358979. Ця функція не має аргументів, але дужки обов\'язкові!',
+                argsInfo: '<i>Аргументи відсутні. Дужки залишаються порожніми.</i>',
+                inputs: [],
+                compute: () => Math.PI,
+                explain: () => `Точне значення константи π в Excel.`
+            },
+            {
+                id: 'power',
+                name: 'POWER',
+                syntax: '=POWER(число; степінь)',
+                description: 'Підносить число до вказаного степеня. Аналог математичного запису xⁿ або оператора ^ в Excel.',
+                argsInfo: '<code>число</code> — основа (що підносимо);<br><code>степінь</code> — показник степеня (до якого степеня підносимо).',
+                inputs: [
+                    { name: 'число', label: 'Основа (число)', type: 'number', default: 5, step: 1 },
+                    { name: 'степінь', label: 'Показник степеня', type: 'number', default: 3, step: 1 }
+                ],
+                compute: (args) => Math.pow(args[0], args[1]),
+                explain: (args, res) => `Число ${args[0]} у степені ${args[1]} дорівнює ${res}.`
+            },
+            {
+                id: 'round',
+                name: 'ROUND',
+                syntax: '=ROUND(число; кількість_розрядів)',
+                description: 'Округляє число до вказаної кількості десяткових розрядів за стандартними математичними правилами (якщо наступна цифра ≥ 5, округлює вгору).',
+                argsInfo: '<code>число</code> — число для округлення;<br><code>кількість_розрядів</code> — скільки знаків залишити після коми (0 — до цілого, >0 — десяткові знаки).',
+                inputs: [
+                    { name: 'число', label: 'Число', type: 'number', default: 3.14159, step: 0.0001 },
+                    { name: 'кількість_розрядів', label: 'Знаків після коми', type: 'number', default: 2, step: 1 }
+                ],
+                compute: (args) => {
+                    const factor = Math.pow(10, args[1]);
+                    return Math.round(args[0] * factor) / factor;
+                },
+                explain: (args, res) => `Число ${args[0]}, округлене до ${args[1]} знаків після коми — це ${res}.`
+            },
+            {
+                id: 'sin',
+                name: 'SIN',
+                syntax: '=SIN(число)',
+                description: 'Повертає синус кута. УВАГА: кут у функції SIN має бути заданий у РАДІАНАХ, а не в градусах! Щоб перевести градуси в радіани, використовуйте RADIANS(кут).',
+                argsInfo: '<code>число</code> — кут у радіанах, синус якого потрібно обчислити.',
+                inputs: [
+                    { name: 'число', label: 'Кут у радіанах (наприклад, 1.57)', type: 'number', default: 1.570796, step: 0.1 }
+                ],
+                compute: (args) => parseFloat(Math.sin(args[0]).toFixed(6)),
+                explain: (args, res) => `Синус кута ${args[0]} рад дорівнює ${res}.`
+            },
+            {
+                id: 'sqrt',
+                name: 'SQRT',
+                syntax: '=SQRT(число)',
+                description: 'Обчислює квадратний корінь із додатного числа (√x). Якщо передати від\'ємне число, Excel поверне помилку #NUM! (#ЧИСЛО!).',
+                argsInfo: '<code>число</code> — додатне дійсне число (або 0), з якого добувається корінь.',
+                inputs: [
+                    { name: 'число', label: 'Додатне число', type: 'number', default: 64, step: 1 }
+                ],
+                compute: (args) => args[0] < 0 ? '#ЧИСЛО!' : parseFloat(Math.sqrt(args[0]).toFixed(6)),
+                explain: (args, res) => args[0] < 0 ? 'Помилка! Квадратний корінь з від\'ємного числа не існує серед дійсних чисел.' : `Квадратний корінь з ${args[0]} дорівнює ${res}.`
+            },
+            {
+                id: 'degrees',
+                name: 'DEGREES',
+                syntax: '=DEGREES(кут)',
+                description: 'Перетворює значення кута з радіанів у градуси. Формула перетворення: Градуси = Радіани × (180 / π).',
+                argsInfo: '<code>кут</code> — значення кута в радіанах, яке треба перевести у градуси.',
+                inputs: [
+                    { name: 'кут', label: 'Кут у радіанах', type: 'number', default: 3.141593, step: 0.1 }
+                ],
+                compute: (args) => parseFloat((args[0] * (180 / Math.PI)).toFixed(4)),
+                explain: (args, res) => `${args[0]} радіан відповідає ${res}°.`
+            },
+            {
+                id: 'radians',
+                name: 'RADIANS',
+                syntax: '=RADIANS(кут)',
+                description: 'Перетворює значення кута з градусів у радіани. Необхідна для підготовки кутів перед обчисленням тригонометричних функцій (SIN, COS).',
+                argsInfo: '<code>кут</code> — значення кута в градусах, яке треба перевести в радіани.',
+                inputs: [
+                    { name: 'кут', label: 'Кут у градусах (°)', type: 'number', default: 180, step: 1 }
+                ],
+                compute: (args) => parseFloat((args[0] * (Math.PI / 180)).toFixed(6)),
+                explain: (args, res) => `${args[0]}° у радіанах дорівнює ${res} рад.`
+            },
+            {
+                id: 'randbetween',
+                name: 'RANDBETWEEN',
+                syntax: '=RANDBETWEEN(нижня_межа; верхня_межа)',
+                description: 'Генерує випадкове ціле число у заданому діапазоні включно. При кожному перерахунку аркуша генерується нове число.',
+                argsInfo: '<code>нижня_межа</code> — найменше ціле число;<br><code>верхня_межа</code> — найбільше ціле число.',
+                inputs: [
+                    { name: 'нижня_межа', label: 'Мінімум (нижня межа)', type: 'number', default: 1, step: 1 },
+                    { name: 'верхня_межа', label: 'Максимум (верхня межа)', type: 'number', default: 100, step: 1 }
+                ],
+                compute: (args) => {
+                    const min = Math.ceil(args[0]);
+                    const max = Math.floor(args[1]);
+                    if (min > max) return 'Помилка (Min > Max)';
+                    return Math.floor(Math.random() * (max - min + 1)) + min;
+                },
+                explain: (args, res) => `Випадкове ціле число між ${args[0]} та ${args[1]}.`
+            }
+        ];
+
+        /* ================= QUIZ DATABASE ================= */
+        const QUIZ_QUESTIONS = [
+            {
+                tag: 'Абсолютна величина',
+                question: 'Що поверне формула в Excel: =ABS(-25.5)?',
+                options: ['-25.5', '25.5', '25', 'Помилку #ЧИСЛО!'],
+                correct: 1,
+                explanation: 'Функція ABS відкидає знак мінус і повертає додатний модуль числа (25.5).'
+            },
+            {
+                tag: 'Округлення',
+                question: 'Який результат виконає формула =INT(-3.8)?',
+                options: ['-3', '-4', '3.8', '-3.8'],
+                correct: 1,
+                explanation: 'Функція INT округляє до найближчого МЕНШОГО цілого. Число -4 менше за -3.8!'
+            },
+            {
+                tag: 'Степінь',
+                question: 'Яку формулу слід записати в Excel для обчислення 2 у степені 4 (2⁴)?',
+                options: ['=POWER(4; 2)', '=POWER(2; 4)', '=SQRT(2; 4)', '=INT(2^4)'],
+                correct: 1,
+                explanation: 'Синтаксис POWER(основа; степінь), тому для 2⁴ записуємо =POWER(2; 4).'
+            },
+            {
+                tag: 'Квадратний корінь',
+                question: 'Яким буде результат обчислення виразу =SQRT(144)?',
+                options: ['12', '14.4', '72', '144'],
+                correct: 0,
+                explanation: 'Квадратний корінь з 144 дорівнює 12, бо 12 * 12 = 144.'
+            },
+            {
+                tag: 'Перетворення кутів',
+                question: 'Яка функція перетворить 90 градусів у радіани для подальшого обчислення синуса?',
+                options: ['=DEGREES(90)', '=RADIANS(90)', '=ROUND(90)', '=SIN(90)'],
+                correct: 1,
+                explanation: 'Для переведення градусів у радіани використовують функцію RADIANS.'
+            },
+            {
+                tag: 'Округлення десяткових',
+                question: 'Результат виконання формули =ROUND(4.567; 2) дорівнює:',
+                options: ['4.56', '4.57', '4.5', '5'],
+                correct: 1,
+                explanation: 'Другий аргумент (2) означає 2 знаки після коми. Третя цифра після коми 7 ≥ 5, тому округлюємо вгору до 4.57.'
+            },
+            {
+                tag: 'Константи',
+                question: 'Який запис функції PI в Excel є правильним?',
+                options: ['=PI(3.14)', '=PI()', '=PI', '=PI(180)'],
+                correct: 1,
+                explanation: 'Функція PI не приймає аргументів, але порожні круглі дужки () є обов\'язковими!'
+            },
+            {
+                tag: 'Випадкові числа',
+                question: 'Яке з наведених чисел МОЖЕ бути результатом формули =RANDBETWEEN(10; 20)?',
+                options: ['9', '15.5', '17', '21'],
+                correct: 2,
+                explanation: 'RANDBETWEEN генерує тільки ЦІЛІ числа від нижньої до верхньої межі включно (від 10 до 20).'
+            },
+            {
+                tag: 'Тригонометрія',
+                question: 'Яке значення поверне формула =SIN(RADIANS(30)), якщо sin(30°) = 0.5?',
+                options: ['0.5', '30', '1', '0'],
+                correct: 0,
+                explanation: 'Спочатку RADIANS(30) переводить 30° у радіани, а SIN обчислює синус, який дорівнює 0.5.'
+            },
+            {
+                tag: 'Комплексне завдання',
+                question: 'Чому дорівнює результат формули: =POWER(SQRT(16); 2)?',
+                options: ['4', '8', '16', '2'],
+                correct: 2,
+                explanation: 'SQRT(16) дорівнює 4. Потім POWER(4; 2) підносить 4 до квадрата і отримує 16.'
+            }
+        ];
+
+        /* ================= APP STATE ================= */
+        let currentFxIndex = 0;
+        let quizCurrentIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = false;
+
+        /* ================= INIT & EVENT LISTENERS ================= */
+        window.onload = function() {
+            renderFunctionList();
+            loadFunctionDetails(0);
+            initQuiz();
+        };
+
+        function switchMainTab(tab) {
+            const learnTab = document.getElementById('tab-learn');
+            const quizTab = document.getElementById('tab-quiz');
+            const learnBtn = document.getElementById('nav-learn-btn');
+            const quizBtn = document.getElementById('nav-quiz-btn');
+
+            if (tab === 'learn') {
+                learnTab.classList.remove('hidden');
+                quizTab.classList.add('hidden');
+                learnBtn.className = "px-4 py-2 rounded-lg bg-white text-emerald-800 shadow transition-all font-bold";
+                quizBtn.className = "px-4 py-2 rounded-lg text-emerald-100 hover:text-white transition-all font-medium";
+            } else {
+                learnTab.classList.add('hidden');
+                quizTab.classList.remove('hidden');
+                quizBtn.className = "px-4 py-2 rounded-lg bg-white text-emerald-800 shadow transition-all font-bold";
+                learnBtn.className = "px-4 py-2 rounded-lg text-emerald-100 hover:text-white transition-all font-medium";
+            }
+        }
+
+        /* ================= LEARN TAB LOGIC ================= */
+        function renderFunctionList() {
+            const container = document.getElementById('function-list');
+            container.innerHTML = '';
+
+            EXCEL_FUNCTIONS.forEach((fx, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `fx-btn-${idx}`;
+                btn.onclick = () => loadFunctionDetails(idx);
+                btn.className = `w-full text-left px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-between border ${
+                    idx === currentFxIndex 
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' 
+                        : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 border-slate-200'
+                }`;
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <span class="font-mono font-bold ${idx === currentFxIndex ? 'text-white' : 'text-emerald-700'}">${fx.name}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-60"></i>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function loadFunctionDetails(index) {
+            currentFxIndex = index;
+            const fx = EXCEL_FUNCTIONS[index];
+
+            // Update tab selection styles
+            EXCEL_FUNCTIONS.forEach((_, idx) => {
+                const btn = document.getElementById(`fx-btn-${idx}`);
+                if (btn) {
+                    if (idx === index) {
+                        btn.className = 'w-full text-left px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-between bg-emerald-600 text-white border border-emerald-600 shadow-md';
+                    } else {
+                        btn.className = 'w-full text-left px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-between bg-slate-50 text-slate-700 hover:bg-emerald-50 border border-slate-200';
+                    }
+                }
+            });
+
+            // Update UI elements
+            document.getElementById('fx-title').innerText = fx.name;
+            document.getElementById('fx-syntax-badge').innerText = fx.syntax;
+            document.getElementById('fx-description').innerText = fx.description;
+            document.getElementById('fx-arguments-info').innerHTML = fx.argsInfo;
+
+            // Render Inputs Sandbox
+            const inputsContainer = document.getElementById('inputs-container');
+            inputsContainer.innerHTML = '';
+
+            if (fx.inputs.length === 0) {
+                inputsContainer.innerHTML = `
+                    <p class="text-sm text-slate-500 italic py-2">
+                        Ця функція не потребує введення аргументів. Вона викликається з порожніми дужками: <code>${fx.syntax}</code>
+                    </p>
+                `;
+            } else {
+                fx.inputs.forEach((inp, inpIdx) => {
+                    const field = document.createElement('div');
+                    field.className = 'space-y-1';
+                    field.innerHTML = `
+                        <label class="block text-xs font-bold text-slate-600">${inp.label}:</label>
+                        <input type="${inp.type}" 
+                               id="sandbox-input-${inpIdx}" 
+                               value="${inp.default}" 
+                               step="${inp.step || 1}" 
+                               oninput="updateSandbox()" 
+                               class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                    `;
+                    inputsContainer.appendChild(field);
+                });
+            }
+
+            updateSandbox();
+        }
+
+        function updateSandbox() {
+            const fx = EXCEL_FUNCTIONS[currentFxIndex];
+            const argValues = [];
+
+            fx.inputs.forEach((inp, inpIdx) => {
+                const el = document.getElementById(`sandbox-input-${inpIdx}`);
+                const val = el ? parseFloat(el.value) || 0 : inp.default;
+                argValues.push(val);
+            });
+
+            // Compute result
+            const result = fx.compute(argValues);
+            
+            // Format Formula Bar text
+            let formulaText = `=${fx.name}(`;
+            formulaText += argValues.join('; ');
+            formulaText += `)`;
+
+            document.getElementById('formula-bar').innerText = formulaText;
+            document.getElementById('fx-live-result').innerText = result;
+            document.getElementById('result-explanation').innerText = fx.explain(argValues, result);
+        }
+
+        /* ================= QUIZ LOGIC ================= */
+        function initQuiz() {
+            quizCurrentIndex = 0;
+            quizScore = 0;
+            quizAnswered = false;
+
+            document.getElementById('quiz-card').classList.remove('hidden');
+            document.getElementById('quiz-finish-card').classList.add('hidden');
+            
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            quizAnswered = false;
+            const q = QUIZ_QUESTIONS[quizCurrentIndex];
+
+            // Progress Header
+            document.getElementById('quiz-progress-text').innerText = `${quizCurrentIndex + 1} / ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('quiz-score').innerText = `${quizScore} / ${QUIZ_QUESTIONS.length}`;
+            
+            const progressPercent = ((quizCurrentIndex) / QUIZ_QUESTIONS.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPercent}%`;
+
+            // Question Details
+            document.getElementById('quiz-tag').innerText = q.tag;
+            document.getElementById('quiz-question-text').innerHTML = q.question;
+
+            // Feedback & Next Button Reset
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.className = 'hidden p-4 rounded-xl font-medium text-sm flex items-center space-x-3';
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            // Render Option Buttons
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `quiz-opt-${idx}`;
+                btn.onclick = () => selectQuizAnswer(idx);
+                btn.className = 'w-full text-left p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all font-mono font-medium text-slate-800 flex items-center justify-between group';
+                btn.innerHTML = `
+                    <span class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center font-bold text-xs transition-all">
+                            ${String.fromCharCode(65 + idx)}
+                        </span>
+                        <span>${opt}</span>
+                    </span>
+                    <i class="fa-regular fa-circle text-slate-300 group-hover:text-emerald-500 transition-all"></i>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectQuizAnswer(selectedIndex) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const q = QUIZ_QUESTIONS[quizCurrentIndex];
+            const isCorrect = selectedIndex === q.correct;
+
+            if (isCorrect) {
+                quizScore++;
+            }
+
+            // Update Header Score
+            document.getElementById('quiz-score').innerText = `${quizScore} / ${QUIZ_QUESTIONS.length}`;
+
+            // Style Option Buttons
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`quiz-opt-${idx}`);
+                btn.disabled = true;
+
+                if (idx === q.correct) {
+                    btn.className = 'w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-mono font-bold text-emerald-900 flex items-center justify-between shadow-sm';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-600 text-lg';
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.className = 'w-full text-left p-4 rounded-xl border-2 border-rose-400 bg-rose-50 font-mono text-rose-900 flex items-center justify-between';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-500 text-lg';
+                } else {
+                    btn.className = 'w-full text-left p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-mono opacity-60 flex items-center justify-between';
+                }
+            });
+
+            // Show Feedback Box
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const feedbackIcon = document.getElementById('quiz-feedback-icon');
+            const feedbackText = document.getElementById('quiz-feedback-text');
+
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.classList.add('bg-emerald-100', 'text-emerald-900', 'border', 'border-emerald-200');
+                feedbackIcon.className = 'fa-solid fa-circle-check text-emerald-600 text-xl';
+                feedbackText.innerHTML = `<strong>Правильно!</strong> ${q.explanation}`;
+            } else {
+                feedbackEl.classList.add('bg-rose-100', 'text-rose-900', 'border', 'border-rose-200');
+                feedbackIcon.className = 'fa-solid fa-triangle-exclamation text-rose-600 text-xl';
+                feedbackText.innerHTML = `<strong>Невірно.</strong> ${q.explanation}`;
+            }
+
+            // Show Next Button
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            quizCurrentIndex++;
+            if (quizCurrentIndex < QUIZ_QUESTIONS.length) {
+                renderQuizQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-progress-bar').style.width = '100%';
+            document.getElementById('quiz-card').classList.add('hidden');
+            
+            const finishCard = document.getElementById('quiz-finish-card');
+            finishCard.classList.remove('hidden');
+
+            const scoreText = `${quizScore} / ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('final-score-text').innerText = scoreText;
+
+            const ratingBadge = document.getElementById('final-rating-badge');
+            const percentage = (quizScore / QUIZ_QUESTIONS.length) * 100;
+
+            if (percentage >= 90) {
+                ratingBadge.innerText = 'Відмінно! Ви справжній експерт Excel!';
+                ratingBadge.className = 'mt-3 inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300';
+            } else if (percentage >= 70) {
+                ratingBadge.innerText = 'Добре! Ви чудово орієнтуєтесь у функціях!';
+                ratingBadge.className = 'mt-3 inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-300';
+            } else {
+                ratingBadge.innerText = 'Спробуйте ще раз для кращого результату!';
+                ratingBadge.className = 'mt-3 inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300';
+            }
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+    </script>
+</body>
+</html>
