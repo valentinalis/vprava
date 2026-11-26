@@ -1,0 +1,535 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Типи даних Access</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: заголовок, дві вкладки. Пояснення: таблиця-даташит як в Access (поля у стовпцях). Тест: питання по одному. */
+:root {
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --bg: #f2f4f8;
+  --surface: #ffffff;
+  --head: #e9ecf2;
+  --fg: #1b2030;
+  --muted: #586075;
+  --line: #d5dae5;
+  --grid: #c9cfdc;
+  --accent: #2f4aa8;
+  --accent-fg: #ffffff;
+  --accent-soft: #e6ebfa;
+  --col-hl: #fff4c9;
+  --ok: #17703f;
+  --ok-soft: #e0f3e8;
+  --bad: #b3261e;
+  --bad-soft: #fbe6e4;
+  --shadow: 0 10px 28px rgba(20, 28, 52, .18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c; --surface: #1a1e28; --head: #252a37; --fg: #e7eaf2; --muted: #9ba3b8;
+    --line: #333a4b; --grid: #3a4153; --accent: #8fa4ff; --accent-fg: #101532; --accent-soft: #252d52;
+    --col-hl: #3d3718;
+    --ok: #6fd09a; --ok-soft: #153324; --bad: #f4877f; --bad-soft: #3b1e1b;
+    --shadow: 0 10px 28px rgba(0, 0, 0, .55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1e28; --head: #252a37; --fg: #e7eaf2; --muted: #9ba3b8;
+  --line: #333a4b; --grid: #3a4153; --accent: #8fa4ff; --accent-fg: #101532; --accent-soft: #252d52;
+  --col-hl: #3d3718;
+  --ok: #6fd09a; --ok-soft: #153324; --bad: #f4877f; --bad-soft: #3b1e1b;
+  --shadow: 0 10px 28px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.55 var(--font-ui);
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+h1 { font-size: clamp(22px, 4vw, 30px); line-height: 1.2; margin: 0 0 6px; font-weight: 600; text-wrap: balance; }
+.lead { margin: 0 0 20px; color: var(--muted); max-width: 65ch; }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; position: relative; z-index: 1; }
+.tab {
+  font: inherit; font-weight: 500; color: var(--muted);
+  background: transparent; border: 1px solid transparent; border-bottom: 0;
+  padding: 10px 18px; border-radius: 8px 8px 0 0; cursor: pointer;
+  margin-bottom: -1px;
+}
+.tab:hover:not(:disabled):not([aria-selected="true"]) { background: var(--accent-soft); color: var(--fg); }
+.tab[aria-selected="true"] { background: var(--surface); border-color: var(--line); color: var(--fg); box-shadow: inset 0 3px 0 var(--accent); }
+.tab:disabled { cursor: not-allowed; opacity: .6; }
+.tab .lock { font-size: 12px; font-weight: 400; margin-left: 6px; }
+.tab:focus-visible, .btn:focus-visible, .opt:focus-visible, .tip-close:focus-visible, th[data-c]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: -2px;
+}
+.tab:focus-visible, .btn:focus-visible, .opt:focus-visible, .tip-close:focus-visible { outline-offset: 2px; }
+.panel {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 0 10px 10px 10px; padding: 20px;
+}
+
+/* buttons */
+.btn {
+  font: inherit; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-fg);
+  padding: 9px 18px; border-radius: 8px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.sec { background: transparent; color: var(--accent); }
+.btn.sec:hover { background: var(--accent-soft); filter: none; }
+
+/* datasheet (вигляд таблиці Access) */
+.hint { margin: 0 0 14px; color: var(--muted); max-width: 65ch; }
+.ds { border: 1px solid var(--grid); border-radius: 8px; overflow: hidden; background: var(--head); }
+.ds-title { padding: 8px 10px 0; }
+.ds-tab {
+  display: inline-block; background: var(--surface); border: 1px solid var(--grid); border-bottom: 0;
+  border-radius: 6px 6px 0 0; padding: 6px 16px; font-size: 13px; box-shadow: inset 0 3px 0 var(--accent);
+}
+.ds-scroll { overflow-x: auto; background: var(--surface); border-top: 1px solid var(--grid); }
+table { table-layout: fixed; border-collapse: collapse; }
+th, td {
+  border: 1px solid var(--grid); padding: 6px 10px; text-align: left; font-size: 14px; line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 32px;
+}
+thead th { background: var(--head); font-weight: 600; cursor: help; }
+thead th .arr { float: right; color: var(--muted); font-size: 11px; line-height: 20px; margin-left: 6px; }
+td[data-c] { cursor: help; }
+th.sel, td.sel { background: var(--head); width: 32px; padding: 6px 0; text-align: center; color: var(--muted); position: sticky; left: 0; z-index: 2; cursor: default; }
+.hl { background: var(--col-hl) !important; }
+td.newrec { background: var(--surface); }
+.chk { display: inline-block; width: 16px; height: 16px; border: 1.5px solid var(--fg); border-radius: 3px; vertical-align: -3px; position: relative; background: var(--surface); }
+.chk.on::after { content: ""; position: absolute; left: 4px; top: 0; width: 4px; height: 9px; border: solid var(--fg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+td.c { text-align: center; }
+.lnk { color: var(--accent); text-decoration: underline; }
+.ds-nav { display: flex; gap: 22px; flex-wrap: wrap; padding: 7px 12px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--grid); }
+
+/* tooltip */
+.tip {
+  position: fixed; z-index: 30; width: min(350px, calc(100vw - 16px));
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 14px 16px; pointer-events: none; font-size: 14px;
+}
+.tip-close { display: none; position: absolute; top: 8px; right: 10px; font: inherit; font-size: 22px; line-height: 1; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 6px 10px; }
+.tip.sheet {
+  left: 0; right: 0; bottom: 0; top: auto; width: auto; max-height: 72vh; overflow-y: auto;
+  border-radius: 14px 14px 0 0; pointer-events: auto;
+  padding-top: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.tip.sheet .tip-close { display: block; }
+.tip-name { font-size: 18px; font-weight: 600; line-height: 1.25; padding-right: 36px; }
+.tip-en { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.tip-use { margin: 0 0 8px; }
+.tip ul { margin: 0 0 10px; padding-left: 18px; }
+.tip li { margin-bottom: 4px; }
+.tip-size { font-family: var(--font-mono); font-size: 12.5px; background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+.tip-size b { font-weight: 500; color: var(--muted); }
+
+/* test tab */
+.lockbar { background: var(--accent-soft); border-radius: 8px; padding: 9px 14px; margin-bottom: 16px; font-size: 14px; }
+.prog { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.bar { flex: 1; height: 6px; background: var(--head); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+h2 { font-size: 20px; line-height: 1.35; margin: 0 0 16px; font-weight: 600; text-wrap: balance; max-width: 60ch; }
+h2:focus { outline: none; }
+.opts { display: grid; gap: 10px; max-width: 640px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 11px 14px; cursor: pointer; min-width: 0;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.opt .ltr { flex: none; width: 26px; height: 26px; border-radius: 6px; background: var(--head); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+.opt:disabled { cursor: default; }
+.opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+.opt.ok .ltr { background: var(--ok); color: var(--surface); }
+.opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+.opt.bad .ltr { background: var(--bad); color: var(--surface); }
+.opt.dim { opacity: .55; }
+.fb { margin-top: 16px; max-width: 640px; border-radius: 8px; padding: 12px 14px; border: 1px solid var(--line); }
+.fb.ok { background: var(--ok-soft); border-color: var(--ok); }
+.fb.bad { background: var(--bad-soft); border-color: var(--bad); }
+.nav { margin-top: 16px; }
+.intro { max-width: 60ch; }
+.intro h2 { margin-bottom: 10px; }
+.intro p { margin: 0 0 12px; color: var(--muted); }
+.scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; max-width: 520px; margin: 4px 0 14px; }
+.score { border-radius: 10px; padding: 14px 16px; border: 1px solid var(--line); }
+.score.ok { background: var(--ok-soft); border-color: var(--ok); }
+.score.bad { background: var(--bad-soft); border-color: var(--bad); }
+.score .n { font-size: 38px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.score.ok .n { color: var(--ok); }
+.score.bad .n { color: var(--bad); }
+.score .l { font-size: 14px; color: var(--muted); }
+.verdict { margin: 0 0 16px; max-width: 60ch; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .panel { padding: 14px; }
+  .tab { padding: 10px 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <h1>Типи даних у Microsoft Access</h1>
+  <p class="lead">Спочатку розгляньте таблицю, потім перевірте себе в тесті.</p>
+
+  <div class="tabs" role="tablist" aria-label="Режими">
+    <button class="tab" role="tab" id="tabLearn" aria-controls="panLearn" aria-selected="true">Пояснення<span class="lock" hidden>· закрито під час тесту</span></button>
+    <button class="tab" role="tab" id="tabTest" aria-controls="panTest" aria-selected="false" tabindex="-1">Тест</button>
+  </div>
+
+  <section class="panel" id="panLearn" role="tabpanel" aria-labelledby="tabLearn">
+    <p class="hint">Наведіть курсор на назву поля або на будь-яку клітинку стовпця, щоб побачити тип даних і його особливості. На телефоні торкніться стовпця. Якщо таблиця ширша за екран, прокрутіть її вбік.</p>
+    <div class="ds">
+      <div class="ds-title"><span class="ds-tab">Замовлення</span></div>
+      <div class="ds-scroll"><table id="ds"></table></div>
+      <div class="ds-nav" aria-hidden="true"><span>Запис: ◀ 1 з 3 ▶</span><span>Немає фільтра</span></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panTest" role="tabpanel" aria-labelledby="tabTest" hidden>
+    <div id="testBox"></div>
+  </section>
+</div>
+
+<div class="tip" id="tip" role="tooltip" hidden>
+  <button class="tip-close" id="tipClose" type="button" aria-label="Закрити">×</button>
+  <div id="tipBody"></div>
+</div>
+
+<script>
+const TYPES = [
+  { field: "Прізвище", ex: ["Коваленко", "Шевченко", "Мельник"], name: "Короткий текст", en: "Short Text",
+    use: "Імена, адреси, коди, телефони, поштові індекси.",
+    feats: ["Довжину обмежує властивість «Розмір поля», максимум 255 символів.", "Цифри зберігаються як текст, тому рахувати з ними не можна.", "Підходить для значень із ведучими нулями та символами: +380…, 01001."],
+    size: "до 255 символів" },
+  { field: "Примітка", ex: ["Переможець міської олімпіади з інформатики. Готує доповідь для конференції.", "Потрібен ключ від кабінету 214 для репетиції.", "Відповідає за обладнання в кабінеті."], name: "Довгий текст", en: "Long Text (раніше MEMO)",
+    use: "Описи, примітки, коментарі, будь-який вільний текст.",
+    feats: ["Вміщує значно більше за 255 символів.", "Може зберігати форматований текст (властивість «Формат тексту»).", "Для кодів і коротких назв не потрібен: використовуйте Короткий текст."],
+    size: "до 1 ГБ символів, у формі видно близько 64 000" },
+  { field: "Кількість", ex: ["25", "140", "8"], right: true, name: "Число", en: "Number",
+    use: "Кількості, оцінки, вік та інші значення для обчислень.",
+    feats: ["Діапазон і обсяг пам’яті задає «Розмір поля»: Байт, Ціле, Довге ціле, Одинарне, Подвійне, Десяткове.", "Байт зберігає цілі від 0 до 255, Ціле від −32 768 до 32 767.", "Обирайте найменший розмір, у який вміщаються всі значення."],
+    size: "від 1 до 12 байтів залежно від розміру поля" },
+  { field: "Серійний номер", ex: ["4 500 000 000 000", "9 100 000 000 000", "7 250 000 000 000"], right: true, name: "Велике число", en: "Large Number",
+    use: "Дуже великі цілі: ідентифікатори, лічильники, довгі номери.",
+    feats: ["Ціле 64-бітне число (BigInt).", "Діапазон приблизно від −9,2·10¹⁸ до 9,2·10¹⁸.", "Є в сучасних версіях Access, зокрема в Microsoft 365."],
+    size: "8 байтів" },
+  { field: "Дата народження", ex: ["14.03.2005", "02.11.2004", "21.07.2005"], right: true, name: "Дата й час", en: "Date/Time",
+    use: "Дати народження, терміни, час подій.",
+    feats: ["Зберігає дату, час або обидва значення разом.", "Дати можна додавати, віднімати й порівнювати, наприклад знайти різницю в днях.", "Вигляд значення (14.03.2005 чи 14 березня) змінює властивість «Формат», сама дата не змінюється."],
+    size: "8 байтів, роки від 100 до 9999" },
+  { field: "Вартість", ex: ["1 249,50 ₴", "89,99 ₴", "320,00 ₴"], right: true, name: "Грошова одиниця", en: "Currency",
+    use: "Ціни, суми, зарплати.",
+    feats: ["До 15 цифр перед комою й 4 після.", "Обчислює без похибок округлення, на відміну від Одинарного й Подвійного числа.", "Символ валюти (₴, $, €) задається форматом."],
+    size: "8 байтів" },
+  { field: "Код замовлення", ex: ["1", "2", "3"], right: true, name: "Автонумерація", en: "AutoNumber",
+    use: "Первинні ключі: код запису, номер замовлення.",
+    feats: ["Значення створює сам Access, вручну його змінити не можна.", "Нумерація послідовна або випадкова. Номер видаленого запису повторно не використовується.", "У таблиці може бути лише одне таке поле."],
+    size: "4 байти" },
+  { field: "Оплачено", ex: [{ chk: true }, { chk: false }, { chk: true }], center: true, name: "Так/Ні", en: "Yes/No",
+    use: "Так/Ні, Істина/Хибність, Увімк./Вимк.",
+    feats: ["У таблицях і формах показується прапорцем.", "«Так» зберігається як −1, «Ні» як 0.", "Підходить для станів на кшталт «Оплачено» чи «Присутній»."],
+    size: "1 біт" },
+  { field: "Сайт", ex: [{ link: "https://school.edu.ua" }, { link: "https://example.com.ua" }, { link: "https://lyceum.edu.ua" }], name: "Гіперпосилання", en: "Hyperlink",
+    use: "Адреси сайтів, файлів, електронної пошти.",
+    feats: ["Клік по значенню відкриває сайт або файл чи створює лист.", "Складається з тексту для показу й адреси.", "Для звичайного тексту використовуйте Короткий текст."],
+    size: "до 2048 символів" },
+  { field: "Документи", ex: ["scan.pdf (2)", "photo.jpg (1)", "report.docx (3)"], name: "Вкладення", en: "Attachment",
+    use: "Фото, PDF і документи Office безпосередньо в записі.",
+    feats: ["В одному полі зберігається кілька файлів різних типів.", "Файли стискаються, якщо їхній формат це дозволяє.", "Усе лежить у файлі бази даних, який обмежений 2 ГБ. Працює у форматі .accdb."],
+    size: "обмежує розмір бази даних, 2 ГБ" },
+  { field: "Сума", ex: ["6 247,50 ₴", "449,95 ₴", "1 920,00 ₴"], right: true, name: "Обчислюваний", en: "Calculated",
+    use: "Значення, яке виводиться за формулою з інших полів, наприклад [Кількість]*[Ціна].",
+    feats: ["Результат рахується автоматично й не вводиться вручну.", "Вираз може посилатися лише на поля цієї ж таблиці.", "Тип результату задають самі: текст, число, грошова одиниця, дата чи Так/Ні."],
+    size: "залежить від типу результату" },
+  { field: "Країна", ex: ["Україна", "Польща", "Німеччина"], name: "Майстер підстановок", en: "Lookup Wizard",
+    use: "Вибір значення зі списку або з іншої таблиці.",
+    feats: ["Користувач вибирає значення зі списку, що розкривається.", "Джерело: власний перелік значень або поле іншої таблиці.", "У таблиці зберігається код, а видно відповідний текст. Майстер також будує зв’язок між таблицями."],
+    size: "залежить від збереженого значення" },
+  { field: "Малюнок", ex: ["Рисунок Bitmap", "Документ Word", "Рисунок Bitmap"], name: "Об’єкт OLE", en: "OLE Object",
+    use: "Вбудовані об’єкти: рисунок, документ Word, діаграма Excel.",
+    feats: ["Об’єкт відкривається в програмі, яка його створила.", "Сильно збільшує розмір бази даних.", "У сучасних базах замість OLE зручніше використовувати Вкладення."],
+    size: "до 2 ГБ" }
+];
+
+/* Перший варіант у кожному питанні правильний, порядок варіантів перемішується під час тесту. */
+const QUESTIONS = [
+  { q: "Поле «Номер телефону» зі значеннями на кшталт +380 50 123 45 67. Який тип даних обрати?", o: ["Короткий текст", "Число", "Велике число", "Грошова одиниця"],
+    exp: "Телефон не використовують в арифметиці, а ще він містить «+», пробіли й може починатися з нуля." },
+  { q: "Поле «Коментар викладача» має містити кілька речень вільного тексту. Який тип обрати?", o: ["Довгий текст", "Короткий текст", "Гіперпосилання", "Вкладення"],
+    exp: "Довгий текст вміщає значно більше за 255 символів, тому підходить для приміток і коментарів." },
+  { q: "Поле «Кількість на складі» зі значеннями 25, 140, 8, над якими виконуватимуть обчислення. Який тип обрати?", o: ["Число", "Короткий текст", "Автонумерація", "Так/Ні"],
+    exp: "Для значень, з якими рахують, потрібен тип Число." },
+  { q: "Поле «Ціна» зі значеннями на кшталт 1 249,50 ₴. Потрібні точні обчислення без похибок округлення. Який тип обрати?", o: ["Грошова одиниця", "Дата й час", "Короткий текст", "Обчислюваний"],
+    exp: "Грошова одиниця зберігає до 4 знаків після коми й рахує без похибок округлення." },
+  { q: "Поле «Дата народження». Який тип даних обрати?", o: ["Дата й час", "Короткий текст", "Число", "Автонумерація"],
+    exp: "Тип Дата й час дає змогу додавати, віднімати й порівнювати дати." },
+  { q: "Поле «Код замовлення» має автоматично отримувати унікальний номер для кожного нового запису. Який тип обрати?", o: ["Автонумерація", "Число", "Короткий текст", "Майстер підстановок"],
+    exp: "Автонумерацію заповнює сам Access, тому її використовують для первинного ключа." },
+  { q: "Поле «Оплачено» може мати лише два стани: так або ні. Який тип обрати?", o: ["Так/Ні", "Короткий текст", "Число", "Вкладення"],
+    exp: "Так/Ні показується прапорцем і зберігає лише два значення." },
+  { q: "Поле «Сайт компанії»: клік по значенню має відкривати сторінку в браузері. Який тип обрати?", o: ["Гіперпосилання", "Довгий текст", "Короткий текст", "Вкладення"],
+    exp: "Гіперпосилання зберігає адресу, за якою можна перейти одним кліком." },
+  { q: "До запису студента треба додати кілька файлів: фотографію та скан заяви у форматі PDF. Який тип обрати?", o: ["Вкладення", "Гіперпосилання", "Довгий текст", "Короткий текст"],
+    exp: "Вкладення дає змогу тримати в одному полі кілька файлів різних типів." },
+  { q: "Поле «Сума» має самостійно рахуватися як Кількість × Ціна, без ручного введення. Який тип обрати?", o: ["Обчислюваний", "Число", "Грошова одиниця", "Автонумерація"],
+    exp: "Обчислюваний тип виводить результат формули з інших полів тієї ж таблиці." },
+  { q: "У полі «Країна» користувач має вибирати значення зі списку, що розкривається. Який тип обрати?", o: ["Майстер підстановок", "Короткий текст", "Так/Ні", "Гіперпосилання"],
+    exp: "Майстер підстановок створює поле зі списком і може пов’язувати таблиці." },
+  { q: "Поле «Серійний номер» містить дуже великі цілі значення, наприклад 9 100 000 000 000. Який тип обрати?", o: ["Велике число", "Число (Довге ціле)", "Автонумерація", "Так/Ні"],
+    exp: "Велике число займає 8 байтів. Довге ціле вміщає лише близько 2 мільярдів." }
+];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tabLearn = $("tabLearn"), tabTest = $("tabTest"), panLearn = $("panLearn"), panTest = $("panTest");
+let tab = "learn";
+let phase = "intro"; // intro | running | done
+
+/* ---------- вкладки ---------- */
+function setTab(t) {
+  if (t === "learn" && phase === "running") return;
+  tab = t;
+  const learn = t === "learn";
+  tabLearn.setAttribute("aria-selected", learn);
+  tabTest.setAttribute("aria-selected", !learn);
+  tabLearn.tabIndex = learn ? 0 : -1;
+  tabTest.tabIndex = learn ? -1 : 0;
+  panLearn.hidden = !learn;
+  panTest.hidden = learn;
+  hideTip();
+}
+function lockLearn(on) {
+  tabLearn.disabled = on;
+  tabLearn.querySelector(".lock").hidden = !on;
+}
+tabLearn.addEventListener("click", () => setTab("learn"));
+tabTest.addEventListener("click", () => setTab("test"));
+document.querySelector(".tabs").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = tab === "learn" ? "test" : "learn";
+  if (next === "learn" && phase === "running") return;
+  setTab(next);
+  (next === "learn" ? tabLearn : tabTest).focus();
+});
+
+/* ---------- таблиця в стилі Access ---------- */
+const COLW = 172, SELW = 32;
+function cellHTML(v) {
+  if (typeof v === "string") return esc(v);
+  if (v.link) return '<span class="lnk">' + esc(v.link) + "</span>";
+  return '<span class="chk' + (v.chk ? " on" : "") + '" role="img" aria-label="' + (v.chk ? "позначено" : "не позначено") + '"></span>';
+}
+(function buildTable() {
+  const tbl = $("ds");
+  tbl.style.width = (SELW + TYPES.length * COLW) + "px";
+  let h = "<colgroup><col style=\"width:" + SELW + 'px">' + TYPES.map(() => '<col style="width:' + COLW + 'px">').join("") + "</colgroup>";
+  h += '<thead><tr><th class="sel"></th>' + TYPES.map((t, c) =>
+    '<th data-c="' + c + '" tabindex="0" aria-describedby="tip" title=""><span class="arr">▾</span>' + esc(t.field) + "</th>").join("") + "</tr></thead><tbody>";
+  for (let r = 0; r < 3; r++) {
+    h += '<tr><td class="sel">' + (r + 1) + "</td>" + TYPES.map((t, c) =>
+      '<td data-c="' + c + '"' + (t.center ? ' class="c"' : t.right ? ' style="text-align:right"' : "") + (typeof t.ex[r] === "string" ? ' title=""' : "") + ">" + cellHTML(t.ex[r]) + "</td>").join("") + "</tr>";
+  }
+  h += '<tr><td class="sel">*</td>' + TYPES.map((t, c) => '<td data-c="' + c + '" class="newrec"></td>').join("") + "</tr></tbody>";
+  tbl.innerHTML = h;
+})();
+
+/* ---------- підказки ---------- */
+const tip = $("tip"), tipBody = $("tipBody"), ds = $("ds");
+let curC = -1, hlC = -1, lastPointer = "mouse";
+
+function fillTip(c) {
+  if (curC === c) return;
+  curC = c;
+  const t = TYPES[c];
+  tipBody.innerHTML =
+    '<div class="tip-name">' + esc(t.name) + "</div>" +
+    '<div class="tip-en">' + esc(t.en) + "</div>" +
+    '<p class="tip-use">' + esc(t.use) + "</p>" +
+    "<ul>" + t.feats.map((f) => "<li>" + esc(f) + "</li>").join("") + "</ul>" +
+    '<div class="tip-size"><b>Обсяг:</b> ' + esc(t.size) + "</div>";
+}
+function highlight(c) {
+  if (hlC === c) return;
+  ds.querySelectorAll(".hl").forEach((x) => x.classList.remove("hl"));
+  hlC = c;
+  if (c >= 0) ds.querySelectorAll('[data-c="' + c + '"]').forEach((x) => x.classList.add("hl"));
+}
+function showTip(c, mode, x, y, el) {
+  fillTip(c);
+  highlight(c);
+  tip.classList.toggle("sheet", mode === "sheet");
+  tip.hidden = false;
+  if (mode === "sheet") { tip.style.left = ""; tip.style.top = ""; return; }
+  const w = tip.offsetWidth, h = tip.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+  let l, tp;
+  if (mode === "follow") {
+    l = x + 18; tp = y + 18;
+    if (l + w > vw - 8) l = x - w - 18;
+    if (tp + h > vh - 8) tp = y - h - 18;
+  } else {
+    const r = el.getBoundingClientRect();
+    l = r.left; tp = r.bottom + 8;
+    if (tp + h > vh - 8) tp = r.top - h - 8;
+  }
+  l = Math.max(8, Math.min(l, vw - w - 8));
+  tp = Math.max(8, Math.min(tp, vh - h - 8));
+  tip.style.left = l + "px";
+  tip.style.top = tp + "px";
+}
+function hideTip() {
+  tip.hidden = true;
+  highlight(-1);
+}
+document.addEventListener("pointermove", (e) => { lastPointer = e.pointerType; });
+document.addEventListener("pointerdown", (e) => { lastPointer = e.pointerType; });
+
+ds.addEventListener("mousemove", (e) => {
+  if (lastPointer !== "mouse") return;
+  const el = e.target.closest("[data-c]");
+  if (!el) { hideTip(); return; }
+  showTip(Number(el.dataset.c), "follow", e.clientX, e.clientY, el);
+});
+ds.addEventListener("mouseleave", () => { if (lastPointer === "mouse") hideTip(); });
+ds.addEventListener("click", (e) => {
+  if (lastPointer === "mouse") return;
+  const el = e.target.closest("[data-c]");
+  if (!el) return;
+  const c = Number(el.dataset.c);
+  if (!tip.hidden && tip.classList.contains("sheet") && curC === c) hideTip();
+  else showTip(c, "sheet", 0, 0, el);
+});
+ds.addEventListener("focusin", (e) => {
+  const el = e.target.closest("th[data-c]");
+  if (el && el.matches(":focus-visible")) showTip(Number(el.dataset.c), "anchor", 0, 0, el);
+});
+ds.addEventListener("focusout", () => { if (!tip.classList.contains("sheet")) hideTip(); });
+$("tipClose").addEventListener("click", hideTip);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideTip(); });
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#ds") && !e.target.closest("#tip")) hideTip();
+});
+
+/* ---------- тест ---------- */
+const box = $("testBox");
+let run = null;
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function renderIntro() {
+  box.innerHTML =
+    '<div class="intro"><h2>Перевірте себе</h2>' +
+    "<p>У тесті " + QUESTIONS.length + " питань. У кожному описано поле таблиці, і потрібно обрати для нього тип даних. Після відповіді одразу видно, правильна вона чи ні. Кількість правильних і неправильних відповідей з’явиться наприкінці.</p>" +
+    "<p>Після старту вкладка «Пояснення» буде закрита до завершення тесту, тож перегляньте таблицю заздалегідь.</p>" +
+    '<button class="btn" type="button" data-act="start">Почати тест</button></div>';
+}
+function startTest() {
+  run = {
+    list: shuffle(QUESTIONS.map((q) => ({
+      q: q.q, exp: q.exp,
+      opts: shuffle(q.o.map((t, j) => ({ t, ok: j === 0 })))
+    }))),
+    i: 0, right: 0, wrong: 0, answered: false
+  };
+  phase = "running";
+  lockLearn(true);
+  renderQ();
+}
+function renderQ() {
+  const n = run.list.length, cur = run.list[run.i];
+  run.answered = false;
+  box.innerHTML =
+    '<div class="lockbar">Тест триває. Вкладка «Пояснення» недоступна, поки ви не відповісте на всі питання.</div>' +
+    '<div class="prog"><span>Питання ' + (run.i + 1) + " з " + n + '</span><div class="bar"><i style="width:' + (run.i / n * 100) + '%"></i></div></div>' +
+    '<h2 tabindex="-1" id="qh">' + esc(cur.q) + "</h2>" +
+    '<div class="opts">' + cur.opts.map((o, k) =>
+      '<button class="opt" type="button" data-act="pick" data-k="' + k + '"><span class="ltr">' + "АБВГ"[k] + "</span><span>" + esc(o.t) + "</span></button>"
+    ).join("") + "</div>" +
+    '<div id="fb" class="fb" aria-live="polite" hidden></div>' +
+    '<div class="nav"><button class="btn" type="button" id="next" data-act="next" hidden></button></div>';
+  $("qh").focus({ preventScroll: true });
+}
+function answer(k) {
+  if (run.answered) return;
+  run.answered = true;
+  const n = run.list.length, cur = run.list[run.i], chosen = cur.opts[k];
+  const correct = cur.opts.find((o) => o.ok);
+  box.querySelectorAll(".opt").forEach((b, idx) => {
+    b.disabled = true;
+    if (cur.opts[idx].ok) b.classList.add("ok");
+    else if (idx === k) b.classList.add("bad");
+    else b.classList.add("dim");
+  });
+  const fb = $("fb");
+  fb.hidden = false;
+  if (chosen.ok) {
+    run.right++;
+    fb.className = "fb ok";
+    fb.innerHTML = "<strong>Правильно.</strong> " + esc(cur.exp);
+  } else {
+    run.wrong++;
+    fb.className = "fb bad";
+    fb.innerHTML = "<strong>Неправильно.</strong> Правильна відповідь: " + esc(correct.t) + ". " + esc(cur.exp);
+  }
+  box.querySelector(".bar i").style.width = ((run.i + 1) / n * 100) + "%";
+  const next = $("next");
+  next.hidden = false;
+  next.textContent = run.i + 1 === n ? "Показати результат" : "Наступне питання";
+  next.focus();
+}
+function nextQ() {
+  run.i++;
+  if (run.i >= run.list.length) finish();
+  else renderQ();
+}
+function finish() {
+  phase = "done";
+  lockLearn(false);
+  const n = run.list.length, pct = Math.round(run.right / n * 100);
+  let verdict;
+  if (pct >= 90) verdict = "Відмінний результат.";
+  else if (pct >= 70) verdict = "Добрий результат.";
+  else if (pct >= 50) verdict = "Непогано, але варто ще раз переглянути таблицю з поясненнями.";
+  else verdict = "Варто повторити матеріал: поверніться до пояснень і спробуйте ще раз.";
+  box.innerHTML =
+    '<h2 tabindex="-1" id="qh">Результат тесту</h2>' +
+    '<div class="scores"><div class="score ok"><div class="n">' + run.right + '</div><div class="l">правильних відповідей</div></div>' +
+    '<div class="score bad"><div class="n">' + run.wrong + '</div><div class="l">неправильних відповідей</div></div></div>' +
+    '<p class="verdict">' + pct + "% правильних із " + n + " питань. " + verdict + "</p>" +
+    '<div class="row"><button class="btn" type="button" data-act="start">Пройти тест ще раз</button>' +
+    '<button class="btn sec" type="button" data-act="back">Повернутися до пояснень</button></div>';
+  $("qh").focus({ preventScroll: true });
+}
+box.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === "start") startTest();
+  else if (act === "pick") answer(Number(b.dataset.k));
+  else if (act === "next") nextQ();
+  else if (act === "back") { setTab("learn"); window.scrollTo({ top: 0 }); }
+});
+
+renderIntro();
+</script>
+
+</body></html>
