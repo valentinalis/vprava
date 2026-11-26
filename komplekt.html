@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Комп’ютерний конструктор — Практична робота № 3</title>
+<style>
+:root{--ink:#203047;--muted:#64748b;--bg:#f3f6fb;--card:#fff;--accent:#4263eb;--good:#16803c;--bad:#b42318;--line:#dbe3ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(120deg,#243b80,#4263eb);color:#fff;padding:26px 18px}
+header .wrap,main{max-width:1000px;margin:auto}
+.eyebrow{font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+h1{margin:.25rem 0;font-size:clamp(1.5rem,4vw,2.25rem);line-height:1.2}
+header p{margin:.5rem 0 0;max-width:720px}
+main{padding:22px 16px 40px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #23385b0a}
+h2{font-size:1.25rem;margin:0 0 12px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.step{background:#f7f9ff;border:1px solid var(--line);padding:12px;border-radius:12px}
+.step b{display:block;color:var(--accent);margin-bottom:3px}
+.case{border:1px solid var(--line);border-radius:14px;margin:14px 0;overflow:hidden}
+.case-head{padding:15px 18px;background:#f7f9ff;border-bottom:1px solid var(--line)}
+.case-head h3{margin:0 0 5px;font-size:1.1rem}
+.case-head p{margin:0;color:var(--muted)}
+.case-body{padding:16px 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;font-weight:650;margin-bottom:6px}
+select{width:100%;padding:11px;border:1px solid #b9c6d8;border-radius:9px;background:white;color:var(--ink);font:inherit}
+select:focus{outline:3px solid #4263eb33;border-color:var(--accent)}
+.small{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+button{border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}
+.secondary{background:#e8edfa;color:#2946a3}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.result{display:none;margin-top:16px;padding:16px;border-radius:12px;background:#f7f9ff;border:1px solid var(--line)}
+.result.show{display:block}
+.score{font-size:1.5rem;font-weight:800}
+.feedback{padding:12px;margin:10px 0;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.feedback.good{border-left:5px solid var(--good)}
+.feedback.bad{border-left:5px solid var(--bad)}
+.feedback h4{margin:0 0 5px}
+.feedback p{margin:4px 0}
+footer{text-align:center;color:var(--muted);font-size:.9rem;padding:12px}
+@media(max-width:520px){.panel{padding:15px}.case-body{padding:13px}}
+
+.parts-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:16px 0}
+.part-card{border:1px solid var(--line);border-radius:13px;background:#fbfcff;padding:12px;text-align:center}
+.part-picture{width:100%;max-width:180px;height:120px;display:block;margin:0 auto 8px}
+.part-card h3{font-size:1rem;margin:4px 0}
+.part-card p{font-size:.9rem;color:var(--muted);margin:4px 0}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Практична робота № 3 · 8 клас</div>
+    <h1>Комп’ютерний конструктор</h1>
+    <p>Добери складові персонального комп’ютера залежно від його призначення.</p>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Твоя місія</h2>
+    <p>Ти — консультант комп’ютерного магазину. Три клієнти хочуть придбати комп’ютер для різних завдань. Обери для кожного процесор, оперативну пам’ять, накопичувач і відеокарту.</p>
+    <div class="steps">
+      <div class="step"><b>1. Проаналізуй</b>Для чого клієнт використовуватиме комп’ютер?</div>
+      <div class="step"><b>2. Добери</b>Вибери складові, які відповідають навантаженню.</div>
+      <div class="step"><b>3. Перевір</b>Отримай результат і прочитай пояснення.</div>
+    </div>
+    <p class="small">Пам’ятай: дорожча або потужніша складова не завжди потрібна. Важливо підібрати збалансовану конфігурацію.</p>
+  </section>
+
+
+  <section class="panel">
+    <h2>Візуальний довідник комплектуючих</h2>
+    <p>Розглянь зображення перед добором. У різних моделей вигляд може відрізнятися, але основні складові впізнаються за формою.</p>
+    <div class="parts-gallery">
+      <article class="part-card">
+        <svg class="part-picture" viewBox="0 0 180 120" role="img" aria-label="Процесор">
+          <rect x="48" y="20" width="84" height="80" rx="8" fill="#64748b" stroke="#334155" stroke-width="3"/>
+          <rect x="59" y="31" width="62" height="58" rx="5" fill="#d9e2ec" stroke="#334155" stroke-width="2"/>
+          <rect x="68" y="40" width="44" height="40" rx="3" fill="#94a3b8"/>
+          <path d="M35 31H48 M35 45H48 M35 59H48 M35 73H48 M35 87H48 M132 31H145 M132 45H145 M132 59H145 M132 73H145 M132 87H145" stroke="#c28b3c" stroke-width="5" stroke-linecap="round"/>
+          <path d="M62 12V20 M76 12V20 M90 12V20 M104 12V20 M118 12V20 M62 100V108 M76 100V108 M90 100V108 M104 100V108 M118 100V108" stroke="#c28b3c" stroke-width="5" stroke-linecap="round"/>
+          <text x="90" y="65" text-anchor="middle" font-size="12" font-weight="700" fill="#243b53">CPU</text>
+        </svg>
+        <h3>Процесор</h3>
+        <p>Виконує обчислення та команди програм.</p>
+      </article>
+      <article class="part-card">
+        <svg class="part-picture" viewBox="0 0 180 120" role="img" aria-label="Оперативна пам'ять">
+          <rect x="20" y="35" width="140" height="50" rx="5" fill="#166534" stroke="#14532d" stroke-width="3"/>
+          <rect x="33" y="43" width="24" height="29" rx="3" fill="#334155" stroke="#94a3b8"/>
+          <rect x="63" y="43" width="24" height="29" rx="3" fill="#334155" stroke="#94a3b8"/>
+          <rect x="93" y="43" width="24" height="29" rx="3" fill="#334155" stroke="#94a3b8"/>
+          <rect x="123" y="43" width="24" height="29" rx="3" fill="#334155" stroke="#94a3b8"/>
+          <path d="M32 85V96 M44 85V96 M56 85V96 M68 85V96 M80 85V96 M92 85V96 M104 85V96 M116 85V96 M128 85V96 M140 85V96 M152 85V96" stroke="#d4a64a" stroke-width="5"/>
+          <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">RAM</text>
+        </svg>
+        <h3>Оперативна пам’ять</h3>
+        <p>Тимчасово зберігає дані програм, які зараз працюють.</p>
+      </article>
+      <article class="part-card">
+        <svg class="part-picture" viewBox="0 0 180 120" role="img" aria-label="SSD накопичувач">
+          <rect x="28" y="27" width="124" height="66" rx="8" fill="#475569" stroke="#1e293b" stroke-width="3"/>
+          <rect x="39" y="38" width="102" height="44" rx="4" fill="#cbd5e1"/>
+          <rect x="49" y="47" width="36" height="26" rx="3" fill="#64748b"/>
+          <rect x="91" y="47" width="39" height="26" rx="3" fill="#64748b"/>
+          <circle cx="35" cy="34" r="3" fill="#e2e8f0"/><circle cx="145" cy="34" r="3" fill="#e2e8f0"/>
+          <circle cx="35" cy="86" r="3" fill="#e2e8f0"/><circle cx="145" cy="86" r="3" fill="#e2e8f0"/>
+          <text x="90" y="64" text-anchor="middle" font-size="12" font-weight="700" fill="#f8fafc">SSD</text>
+        </svg>
+        <h3>Накопичувач</h3>
+        <p>Зберігає операційну систему, програми та файли.</p>
+      </article>
+      <article class="part-card">
+        <svg class="part-picture" viewBox="0 0 180 120" role="img" aria-label="Дискретна відеокарта">
+          <rect x="18" y="28" width="144" height="65" rx="7" fill="#334155" stroke="#0f172a" stroke-width="3"/>
+          <rect x="28" y="38" width="124" height="44" rx="4" fill="#475569"/>
+          <circle cx="67" cy="60" r="18" fill="#cbd5e1" stroke="#0f172a" stroke-width="3"/>
+          <circle cx="67" cy="60" r="6" fill="#64748b"/>
+          <path d="M67 43L73 55L84 60L73 65L67 77L61 65L50 60L61 55Z" fill="#94a3b8"/>
+          <circle cx="117" cy="60" r="18" fill="#cbd5e1" stroke="#0f172a" stroke-width="3"/>
+          <circle cx="117" cy="60" r="6" fill="#64748b"/>
+          <path d="M117 43L123 55L134 60L123 65L117 77L111 65L100 60L111 55Z" fill="#94a3b8"/>
+          <rect x="44" y="93" width="92" height="8" fill="#c28b3c"/>
+          <text x="90" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">GPU</text>
+        </svg>
+        <h3>Відеокарта</h3>
+        <p>Обробляє графіку та формує зображення на екрані.</p>
+      </article>
+    </div>
+    <p class="small">Підказка: процесор і відеокарта відповідають за обробку даних, оперативна пам’ять — за тимчасове зберігання, накопичувач — за тривале зберігання файлів.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Заявки клієнтів</h2>
+    <div class="case" id="case1">
+      <div class="case-head">
+        <h3>Клієнт 1 — Олена, учениця</h3>
+        <p>Потрібен комп’ютер для навчання, браузера, відеозв’язку, презентацій і перегляду відео. Важливо не переплачувати за ігрові можливості.</p>
+      </div>
+      <div class="case-body">
+        <div class="grid">
+          <div><label for="cpu1">Процесор</label><select id="cpu1"><option value="">— Обери —</option><option value="basic">Базовий сучасний процесор із вбудованою графікою</option><option value="mid">Потужний багатоядерний процесор для складних задач</option><option value="high">Топовий процесор для професійних навантажень</option></select></div>
+          <div><label for="ram1">Оперативна пам’ять</label><select id="ram1"><option value="">— Обери —</option><option value="8">8 ГБ</option><option value="16">16 ГБ</option><option value="32">32 ГБ</option></select></div>
+          <div><label for="drive1">Накопичувач</label><select id="drive1"><option value="">— Обери —</option><option value="hdd">HDD 1 ТБ</option><option value="ssd">SSD 512 ГБ</option><option value="fast">SSD NVMe 2 ТБ</option></select></div>
+          <div><label for="gpu1">Відеокарта</label><select id="gpu1"><option value="">— Обери —</option><option value="integrated">Вбудована графіка процесора</option><option value="gaming">Дискретна ігрова відеокарта</option><option value="pro">Професійна відеокарта високого класу</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" id="case2">
+      <div class="case-head">
+        <h3>Клієнт 2 — Максим, геймер</h3>
+        <p>Хоче грати в сучасні 3D-ігри у високій якості. Комп’ютер має швидко завантажувати ігри й забезпечувати плавне зображення.</p>
+      </div>
+      <div class="case-body">
+        <div class="grid">
+          <div><label for="cpu2">Процесор</label><select id="cpu2"><option value="">— Обери —</option><option value="basic">Базовий сучасний процесор із вбудованою графікою</option><option value="mid">Продуктивний процесор середнього/високого рівня</option><option value="high">Топовий процесор для професійних задач</option></select></div>
+          <div><label for="ram2">Оперативна пам’ять</label><select id="ram2"><option value="">— Обери —</option><option value="8">8 ГБ</option><option value="16">16 ГБ</option><option value="32">32 ГБ</option></select></div>
+          <div><label for="drive2">Накопичувач</label><select id="drive2"><option value="">— Обери —</option><option value="hdd">HDD 1 ТБ</option><option value="ssd">SSD 1 ТБ</option><option value="fast">SSD NVMe 2 ТБ</option></select></div>
+          <div><label for="gpu2">Відеокарта</label><select id="gpu2"><option value="">— Обери —</option><option value="integrated">Вбудована графіка процесора</option><option value="gaming">Потужна дискретна ігрова відеокарта</option><option value="pro">Професійна відеокарта для спеціалізованих задач</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case" id="case3">
+      <div class="case-head">
+        <h3>Клієнт 3 — Андрій, відеомонтажер</h3>
+        <p>Монтує відео високої роздільної здатності, працює з кількома доріжками, ефектами та великими файлами.</p>
+      </div>
+      <div class="case-body">
+        <div class="grid">
+          <div><label for="cpu3">Процесор</label><select id="cpu3"><option value="">— Обери —</option><option value="basic">Базовий процесор для офісних задач</option><option value="mid">Продуктивний процесор середнього рівня</option><option value="high">Потужний багатоядерний процесор</option></select></div>
+          <div><label for="ram3">Оперативна пам’ять</label><select id="ram3"><option value="">— Обери —</option><option value="8">8 ГБ</option><option value="16">16 ГБ</option><option value="32">32 ГБ</option></select></div>
+          <div><label for="drive3">Накопичувач</label><select id="drive3"><option value="">— Обери —</option><option value="hdd">HDD 1 ТБ</option><option value="ssd">SSD 512 ГБ</option><option value="fast">Швидкий SSD NVMe 2 ТБ</option></select></div>
+          <div><label for="gpu3">Відеокарта</label><select id="gpu3"><option value="">— Обери —</option><option value="integrated">Вбудована графіка</option><option value="gaming">Дискретна відеокарта з апаратним прискоренням відео</option><option value="pro">Найдорожча професійна відеокарта незалежно від задач</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="checkAnswers()">Перевірити добір</button>
+      <button class="secondary" onclick="resetAll()">Почати заново</button>
+    </div>
+    <div class="result" id="result" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Підсумкове запитання</h2>
+    <p>Чому не варто встановлювати однаково потужні складові в усі комп’ютери?</p>
+    <p class="small">Подумай: які компоненти найбільше впливають на роботу в іграх, а які — під час навчання чи відеомонтажу?</p>
+  </section>
+  <footer>Практична робота № 3 · Добір складових ПК залежно від призначення</footer>
+</main>
+<script>
+const profiles = {
+  1: {
+    title:"Олена — навчання",
+    correct:{cpu:"basic",ram:"16",drive:"ssd",gpu:"integrated"},
+    explain:{
+      cpu:"Для браузера, офісних програм і відеозв’язку достатньо сучасного базового процесора.",
+      ram:"16 ГБ дають комфортну роботу з браузером, документами та кількома програмами одночасно.",
+      drive:"SSD пришвидшує запуск системи й програм; 512 ГБ — практичний обсяг для навчальних файлів.",
+      gpu:"Вбудованої графіки достатньо для навчання, відео та презентацій. Дискретна відеокарта тут не обов’язкова."
+    }
+  },
+  2: {
+    title:"Максим — ігри",
+    correct:{cpu:"mid",ram:"16",drive:"ssd",gpu:"gaming"},
+    explain:{
+      cpu:"Для сучасних ігор потрібен продуктивний процесор, який не стримуватиме роботу відеокарти.",
+      ram:"16 ГБ — поширений базовий обсяг для сучасного ігрового ПК; вимоги конкретних ігор можуть бути вищими.",
+      drive:"SSD на 1 ТБ забезпечує швидке завантаження ігор і достатній простір для кількох великих проєктів.",
+      gpu:"У 3D-іграх саме дискретна ігрова відеокарта зазвичай найбільше впливає на якість і плавність графіки."
+    }
+  },
+  3: {
+    title:"Андрій — відеомонтаж",
+    correct:{cpu:"high",ram:"32",drive:"fast",gpu:"gaming"},
+    explain:{
+      cpu:"Багатоядерний продуктивний процесор допомагає швидше обробляти й експортувати відео.",
+      ram:"32 ГБ зручніше для монтажу відео високої роздільної здатності та роботи з кількома доріжками.",
+      drive:"Швидкий SSD NVMe великого обсягу корисний для великих відеофайлів і робочих проєктів.",
+      gpu:"Відеокарта з апаратним прискоренням може пришвидшувати ефекти та обробку відео. Потрібна саме сумісна з програмами, а не просто найдорожча."
+    }
+  }
+};
+const labels={cpu:"Процесор",ram:"Оперативна пам’ять",drive:"Накопичувач",gpu:"Відеокарта"};
+function checkAnswers(){
+  let total=0, max=12, missing=[];
+  let out="";
+  for(let n=1;n<=3;n++){
+    let p=profiles[n], correctCount=0, feedback="";
+    for(let key of ["cpu","ram","drive","gpu"]){
+      let chosen=document.getElementById(key+n).value;
+      if(!chosen){missing.push(`Клієнт ${n}: ${labels[key].toLowerCase()}`);continue;}
+      let ok=chosen===p.correct[key];
+      if(ok){total++;correctCount++;}
+      feedback+=`<div class="feedback ${ok?'good':'bad'}"><h4>${ok?'✓':'↻'} ${labels[key]}</h4><p>${ok?'Вдалий вибір. ':'Варто переглянути вибір. '}${p.explain[key]}</p></div>`;
+    }
+    out+=`<h3>${p.title}: ${correctCount}/4</h3>${feedback}`;
+  }
+  const result=document.getElementById("result");
+  result.className="result show";
+  result.innerHTML=`<div class="score">Результат: ${total} із ${max} балів</div>
+  <p>${total===max?'Чудово! Ти підібрав усі конфігурації відповідно до призначення.':total>=8?'Гарний результат! Переглянь пояснення й подумай, які компоненти варто змінити.':'Перевір ще раз потреби кожного клієнта та співвіднеси їх із можливостями складових.'}</p>
+  ${missing.length?`<p><strong>Не всі складові обрані:</strong> ${missing.join("; ")}.</p>`:""}
+  ${out}
+  <p><strong>Висновок:</strong> конфігурація ПК залежить від завдань користувача. Важливо добирати сумісні та збалансовані компоненти, а не просто обирати найдорожчі.</p>`;
+  result.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function resetAll(){
+  document.querySelectorAll("select").forEach(s=>s.value="");
+  const r=document.getElementById("result");r.className="result";r.innerHTML="";
+}
+</script>
+</body>
+</html>
